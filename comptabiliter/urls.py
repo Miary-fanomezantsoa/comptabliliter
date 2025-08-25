@@ -21,11 +21,11 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .admin import PartnerAutocomplete
 from .views import (
-    CurrencyViewSet, TaxViewSet, AccountTagViewSet, # Suppression de AccountViewSet
+    CurrencyViewSet, TaxViewSet, AccountTagViewSet,  # Suppression de AccountViewSet
     JournalViewSet, JournalEntryViewSet, JournalItemViewSet,
     CompanyViewSet, UserProfileViewSet,
-    UserDetailView, CompteComptableViewSet,PartnerViewSet,
-    CurrentUserView  # Ajout de CurrentUserView
+    UserDetailView, CompteComptableViewSet, PartnerViewSet,
+    CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet  # Ajout de CurrentUserView
 )
 from django.contrib import admin
 
@@ -35,7 +35,10 @@ router = DefaultRouter()
 router.register(r'currencies', CurrencyViewSet)
 router.register(r'taxes', TaxViewSet)
 router.register(r'account-tags', AccountTagViewSet)
-# Utilisez UNIQUEMENT ce routeur pour les comptes, il contient toutes les fonctionnalités
+router.register(r'payments', PaymentViewSet)
+router.register(r'orders', OrderViewSet)
+router.register(r'order-items', OrderItemViewSet)
+router.register(r'products', ProductViewSet)
 router.register(r'comptes', CompteComptableViewSet, basename='compte')
 router.register(r'journals', JournalViewSet)
 router.register(r'journal-entries', JournalEntryViewSet)

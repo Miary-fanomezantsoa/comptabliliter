@@ -17,8 +17,9 @@
       </li>
     </ul>
 
-    <h2>Lignes de l'écriture</h2>
+
     <table v-if="journalItems.length">
+    <h2>Lignes de l'écriture</h2>
       <thead>
         <tr>
           <th>Compte</th>
@@ -37,8 +38,9 @@
       </tbody>
     </table>
 
-    <h3>Ajouter une ligne</h3>
+
     <div v-if="selectedEntry" class="add-item-form">
+    <h3>Ajouter une ligne</h3>
       <select v-model="newItem.account_id">
         <option v-for="c in accounts" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>

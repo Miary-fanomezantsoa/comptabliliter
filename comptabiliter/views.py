@@ -173,12 +173,13 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    filterset_fields = ['order']
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        partner_id = self.request.query_params.get('partner')
-        if partner_id:
-            queryset = queryset.filter(partner_id=partner_id)
+        order_id = self.request.query_params.get('order_id')  # récupère order_id depuis la query string
+        if order_id:
+            queryset = queryset.filter(order_id=order_id)
         return queryset
 
     def perform_create(self, serializer):
@@ -245,22 +246,29 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        order_id = self.request.query_params.get('order_id')
+        if order_id:
+            queryset = queryset.filter(order_id=order_id)
+        return queryset
 
 # paiements
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
+    filterset_fields = ['pattern']
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        partner_id = self.request.query_params.get('partner')
-        if partner_id:
-            queryset = queryset.filter(partner_id=partner_id)
+        pattern_id = self.request.query_params.get('pattern')
+        if pattern_id:
+            queryset = queryset.filter(pattern_id=pattern_id)
         return queryset
 
     def perform_create(self, serializer):
         payment = serializer.save()
-        partner = payment.partner
+        partner = payment.pattern  # correct
 
         # Compte partenaire
         account_partner = Account.objects.filter(partner=partner, account_type='asset_receivable').first()

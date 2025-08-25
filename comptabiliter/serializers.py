@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.utils import timezone
 
 from .models import (
     Currency, Tax, AccountTag, Account,
@@ -207,15 +208,35 @@ class OrderSerializer(serializers.ModelSerializer):
         source='partner',
         write_only=True
     )
-    products = serializers.PrimaryKeyRelatedField(
-        queryset=Product.objects.all(),
-        many=True,
-        write_only=True
+    items = serializers.ListField(
+        child=serializers.DictField(),
+        write_only=True,
+        required=True
     )
 
     class Meta:
         model = Order
-        fields = ['id', 'date', 'status', 'due_date', 'partner', 'partner_id', 'products']
+        fields = ['id', 'date', 'status', 'due_date', 'partner', 'partner_id', 'items']
+
+    def create(self, validated_data):
+        items_data = validated_data.pop('items')
+        print("Données items reçues:", items_data)  # debug
+
+        # Ajouter date par défaut si nécessaire
+        if 'date' not in validated_data:
+            validated_data['date'] = timezone.now().date()
+
+        order = Order.objects.create(**validated_data)
+
+        for item in items_data:
+            product = Product.objects.get(id=item['product_id'])
+            OrderItem.objects.create(
+                order=order,
+                product=product,
+                quantity=item.get('quantity', 1)
+            )
+        return order
+
 
 
 # ==== OrderItem ====
@@ -236,12 +257,13 @@ class OrderItemSerializer(serializers.ModelSerializer):
 # ==== Payment ====
 class PaymentSerializer(serializers.ModelSerializer):
     partner = serializers.StringRelatedField(read_only=True)
-    partner_id = serializers.PrimaryKeyRelatedField(
+    pattern_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(),
-        source='partner',
+        source='pattern',
         write_only=True
     )
 
     class Meta:
         model = Payment
-        fields = ['id', 'payment_number', 'type', 'mode', 'description', 'date', 'amount', 'partner', 'partner_id']
+        fields = ['id', 'payment_number', 'type', 'mode', 'description', 'date', 'amount', 'partner', 'pattern_id']
+

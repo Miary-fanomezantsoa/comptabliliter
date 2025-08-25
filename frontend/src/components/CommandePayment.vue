@@ -9,11 +9,19 @@
       </li>
     </ul>
 
-    <h2>Détails de la commande</h2>
+
     <div v-if="selectedOrder">
+    <h2>Détails de la commande</h2>
       <p><strong>Client:</strong> {{ selectedOrder.partner }}</p>
       <p><strong>Date:</strong> {{ selectedOrder.date }}</p>
       <p><strong>État:</strong> {{ selectedOrder.status }}</p>
+      <select v-model="selectedOrder.status" @change="updateOrderStatus(selectedOrder)">
+    <option value="pending">En attente</option>
+    <option value="confirmed">Confirmée</option>
+    <option value="shipped">Expédiée</option>
+    <option value="delivered">Livrée</option>
+    <option value="cancelled">Annulée</option>
+  </select>
 
       <h3>Produits</h3>
       <table v-if="orderItems.length">
@@ -52,7 +60,16 @@
       <h3>Ajouter un paiement</h3>
       <div>
         <input type="number" v-model.number="newPayment.amount" placeholder="Montant"/>
-        <input type="text" v-model="newPayment.mode" placeholder="Mode"/>
+<select v-model="newPayment.mode">
+    <option disabled value="">Choisir un mode de paiement</option>
+    <option value="cash">caisse directe</option>
+    <option value="card">Carte bancaire</option>
+    <option value="mvola">MVola</option>
+    <option value="orange">Orange Money</option>
+    <option value="airtel">Airtel Money</option>
+    <option value="bank">Virement bancaire</option>
+    <option value="cod">Paiement à la livraison</option>
+  </select>
         <input type="text" v-model="newPayment.description" placeholder="Description"/>
         <button @click="addPayment">Ajouter</button>
       </div>
@@ -61,17 +78,25 @@
     <h2>Nouvelle commande</h2>
     <div>
       <select v-model="newOrder.partner_id">
+        <option value="" disabled>Choisir un partenaire</option>
         <option v-for="c in partners" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
+
       <h3>Produits</h3>
       <div v-for="(item, index) in newOrderItems" :key="index" class="product-line">
         <select v-model="item.product_id">
-          <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }}</option>
+          <option value="" disabled>Choisir un produit</option>
+          <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} - {{ p.price }} Ar</option>
         </select>
-        <input type="number" v-model.number="item.quantity" placeholder="Quantité"/>
+        <input type="number" v-model.number="item.quantity" min="1" />
         <button @click="removeNewItem(index)">Supprimer</button>
+        <span>Total: {{ itemTotal(item) }} Ar</span>
       </div>
+
       <button @click="addNewItemLine">Ajouter produit</button>
+
+      <h3>Total commande: {{ orderTotal }} Ar</h3>
+
       <button @click="createOrder">Créer commande</button>
     </div>
   </div>
@@ -100,55 +125,145 @@ export default {
     this.fetchPartners();
     this.fetchProducts();
   },
+  computed: {
+    orderTotal() {
+      return this.newOrderItems.reduce((sum, item) => {
+    const product = this.products.find(p => p.id === item.product_id);
+    const price = product ? Number(product.unit_price) : 0;
+    const quantity = item.quantity ? Number(item.quantity) : 0;
+    console.log("sum:", sum, "Price:", price, "Quantity:", quantity);
+    return sum + price * quantity;
+      }, 0);
+    }
+  },
   methods: {
-    async fetchOrders() {
-      const res = await api.get('/api/orders/');
-      this.orders = res.data;
-    },
-    async fetchPartners() {
-      const res = await api.get('/api/partners/');
-      this.partners = res.data;
-    },
-    async fetchProducts() {
-      const res = await api.get('/api/products/');
-      this.products = res.data;
-    },
-    async selectOrder(order) {
-      this.selectedOrder = order;
-      // Récupérer les items
-      const resItems = await api.get(`/api/order-items/?order_id=${order.id}`);
-      this.orderItems = resItems.data;
-      // Récupérer les paiements
-      const resPayments = await api.get(`/api/payments/?partner=${order.partner_id}`);
+  async updateOrderStatus(order) {
+    try {
+      const res = await api.patch(`/api/orders/${order.id}/`, {
+        status: order.status
+      });
+      console.log("Statut mis à jour:", res.data);
+    } catch (error) {
+      console.error("Erreur mise à jour statut:", error.response?.data || error);
+    }
+  },
+
+  async fetchOrders() {
+    const res = await api.get('/api/orders/');
+    this.orders = res.data;
+  },
+
+  async fetchPartners() {
+    const res = await api.get('/api/partners/');
+    this.partners = res.data;
+  },
+
+  async fetchProducts() {
+    const res = await api.get('/api/products/');
+    this.products = res.data;
+  },
+
+  async selectOrder(order) {
+    this.selectedOrder = order;
+
+    // Récupérer les items de la commande
+    const resItems = await api.get(`/api/order-items/?order_id=${order.id}`);
+    this.orderItems = resItems.data;
+
+    // Trouver l'objet partenaire
+    let partnerObj = null;
+    if (order.partner?.id) {
+      partnerObj = order.partner;
+    } else if (order.partner_id) {
+      partnerObj = this.partners.find(p => p.id === order.partner_id);
+    } else {
+      partnerObj = this.partners.find(p => p.name === order.partner);
+    }
+
+    if (partnerObj) {
+      // Utiliser l'ID de partnerObj pour récupérer les paiements
+      const resPayments = await api.get(`/api/payments/?partner=${partnerObj.id}`);
       this.payments = resPayments.data;
-    },
-    addNewItemLine() {
-      this.newOrderItems.push({ product_id: null, quantity: 1 });
-    },
-    removeNewItem(index) {
-      this.newOrderItems.splice(index, 1);
-    },
-    async createOrder() {
-      if (!this.newOrder.partner_id) return;
+
+      // Mettre à jour selectedOrder.partner pour avoir un objet complet
+      this.selectedOrder.partner = partnerObj;
+    } else {
+      this.payments = [];
+    }
+
+    console.log("selectedOrder complet:", this.selectedOrder);
+  },
+
+  addNewItemLine() {
+    this.newOrderItems.push({ product_id: null, quantity: 1 });
+  },
+
+  removeNewItem(index) {
+    this.newOrderItems.splice(index, 1);
+  },
+
+  itemTotal(item) {
+    const product = this.products.find(p => p.id === item.product_id);
+    const price = product ? Number(product.unit_price) : 0;
+    const quantity = item.quantity ? Number(item.quantity) : 0;
+    return price * quantity;
+  },
+
+  async createOrder() {
+    if (!this.newOrder.partner_id || this.newOrderItems.length === 0) return;
+
+    const validItems = this.newOrderItems
+      .filter(i => i.product_id && i.quantity > 0)
+      .map(i => ({ product_id: i.product_id, quantity: i.quantity }));
+
+    if (!validItems.length) return;
+
+    try {
       const res = await api.post('/api/orders/', {
         partner_id: this.newOrder.partner_id,
-        products: this.newOrderItems.map(i => i.product_id)
+        items: validItems,
+        date: new Date().toISOString().slice(0, 10)
       });
       this.orders.push(res.data);
       this.newOrder.partner_id = null;
       this.newOrderItems = [];
-    },
-    async addPayment() {
-      if (!this.selectedOrder) return;
-      const res = await api.post('/api/payments/', {
-        partner_id: this.selectedOrder.partner_id,
-        amount: this.newPayment.amount,
-        mode: this.newPayment.mode,
-        description: this.newPayment.description
-      });
-      this.payments.push(res.data);
-      this.newPayment = { amount: 0, mode: '', description: '' };
+    } catch (error) {
+      console.error("Erreur création commande:", error.response?.data || error);
     }
+  },
+
+ async addPayment() {
+
+  if (!this.selectedOrder || !this.selectedOrder.partner) return;
+
+  const partnerId = this.selectedOrder.partner.id;
+if (!partnerId) {
+  console.error("Impossible de récupérer l'ID du partenaire !");
+  return;
+}
+  const paymentData = {
+    pattern_id: partnerId,// ⚠️ doit correspondre au serializer
+    amount: Number(this.newPayment.amount),
+    mode: this.newPayment.mode,
+    description: this.newPayment.description,
+    date: new Date().toISOString().slice(0, 10),
+    type: 'incoming',
+    payment_number: `PAY-${Date.now()}`
+  };
+    console.log("Payment data:", paymentData);
+  try {
+    const res = await api.post('/api/payments/', paymentData);
+    this.payments.push(res.data);
+    this.newPayment = { amount: 0, mode: '', description: '' };
+  } catch (error) {
+    console.error("Erreur ajout paiement:", error.response?.data || error);
+  }
+}
+
+
+
+
+
   }
 }
 </script>
@@ -170,4 +285,6 @@ select, input, button { padding: 6px 10px; margin: 5px 0; border-radius: 6px; bo
 button { background-color: #7b4f4f; color: #fff8f0; cursor: pointer; border: none; transition: 0.3s; }
 button:hover { background-color: #8c5c5c; }
 .product-line { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; }
+
+
 </style>

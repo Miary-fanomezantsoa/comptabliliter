@@ -5,17 +5,24 @@ import Comptes from './components/CompteComptable.vue'
 import Partners from "./components/PartnerForm.vue"; // <-- importe ton composant
 import PartnerList from './components/PartnerList.vue';
 import JournalManager from './components/JournalManager.vue';
-import JournalManager from './components/CommandePayment.vue';
+import CommandePayment from './components/CommandePayment.vue';
 const routes = [
   {
     path: '/',
     redirect: '/login', // uniquement redirection
   },
+
   {
     path: '/login',
     name: 'Login',
     component: Login,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/commande&payment',
+    name: 'commande&payment',
+    component: CommandePayment,
+    meta: { requiresAuth: true }
   },
     { path: '/journals',
       name: 'Journals',

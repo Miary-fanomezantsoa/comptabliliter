@@ -10,6 +10,8 @@
       <router-link to="/comptes" class="nav-item">Comptes</router-link>
       <router-link to="/journals" class="nav-item">Journal</router-link>
       <router-link to="/partners-list" class="nav-item">Partenaires</router-link>
+      <router-link to="/commande&payment" class="nav-item">commande et payment</router-link>
+
     </nav>
 
     <div class="header-right">
