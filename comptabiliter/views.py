@@ -1,14 +1,11 @@
 from dal import autocomplete
 from django.db.models import Sum
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, serializers
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action
 import json
-from django.http import HttpResponse
-import pandas as pd
-from datetime import datetime
 from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem, Partner,
@@ -268,54 +265,78 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         payment = serializer.save()
-        partner = payment.pattern  # correct
+        partner = payment.pattern  # le client associé
 
-        # Compte partenaire
+        # Vérifier que le compte du client existe
         account_partner = Account.objects.filter(partner=partner, account_type='asset_receivable').first()
         if not account_partner:
-            account_partner = Account.objects.create(
-                name=f"Client {partner.name}",
-                account_type="asset_receivable",
-                partner=partner
+            raise serializers.ValidationError(
+                f"Le compte comptable du client {partner.name} n'existe pas. Créez d'abord la commande."
             )
 
-        # Compte Banque ou Caisse
-        if payment.mode in ['cash', 'cheque', 'transfer']:
-            account_cash = Account.objects.filter(account_type='asset_cash', name='Banque').first()
-            if not account_cash:
-                account_cash = Account.objects.create(
-                    name='Banque',
-                    account_type='asset_cash'
+        # Mapping des modes de paiement vers comptes et journaux
+        PAYMENT_MAPPING = {
+            'cash': {'account_name': 'Caisse', 'journal_type': 'cash'},
+            'bank': {'account_name': 'Banque', 'journal_type': 'bank'},
+            'card': {'account_name': 'Banque', 'journal_type': 'bank'},
+            'mvola': {'account_name': 'MVola', 'journal_type': 'cash'},
+            'orange': {'account_name': 'Orange Money', 'journal_type': 'cash'},
+            'airtel': {'account_name': 'Airtel Money', 'journal_type': 'cash'},
+            'cod': {'account_name': None, 'journal_type': None},  # paiement à la livraison
+        }
+
+        mode = payment.mode.lower()
+        if mode not in PAYMENT_MAPPING:
+            raise serializers.ValidationError("Mode de paiement non reconnu")
+
+        mapping = PAYMENT_MAPPING[mode]
+
+        # Déterminer le compte à débiter/créditer
+        if mode == 'cod':
+            account_debit = account_partner
+            journal = None
+        else:
+            account_debit = Account.objects.filter(account_type='asset_cash', name=mapping['account_name']).first()
+            if not account_debit:
+                raise serializers.ValidationError(
+                    f"Le compte '{mapping['account_name']}' n'existe pas. Créez-le d'abord."
                 )
 
-        # Journal de paiement
-        journal = Journal.objects.filter(type='cash').first()
-        if not journal:
-            journal = Journal.objects.create(name='Journal de caisse', type='cash')
+            # Journal associé
+            journal = Journal.objects.filter(type=mapping['journal_type']).first()
+            if not journal:
+                raise serializers.ValidationError(
+                    f"Aucun journal de type '{mapping['journal_type']}' n'existe. Créez-le d'abord."
+                )
 
-        entry = JournalEntry.objects.create(
-            journal=journal,
-            reference=f"PAY-{payment.id}",
-            date=payment.date
-        )
+        # Créer l'écriture comptable si ce n'est pas cod
+        if journal:
+            entry = JournalEntry.objects.create(
+                journal=journal,
+                reference=f"PAY-{payment.id}",
+                date=payment.date
+            )
 
-        # Débit : banque / caisse
-        JournalItem.objects.create(
-            entry=entry,
-            account=account_cash,
-            debit=payment.amount,
-            credit=0,
-            label=f"Paiement {payment.id}"
-        )
+            # Débit : compte caisse / banque / mobile money
+            JournalItem.objects.create(
+                entry=entry,
+                account=account_debit,
+                debit=payment.amount,
+                credit=0,
+                label=f"Paiement {payment.id}"
+            )
 
-        # Crédit : compte client
-        JournalItem.objects.create(
-            entry=entry,
-            account=account_partner,
-            debit=0,
-            credit=payment.amount,
-            label=f"Paiement reçu de {partner.name}"
-        )
+            # Crédit : compte client
+            JournalItem.objects.create(
+                entry=entry,
+                account=account_partner,
+                debit=0,
+                credit=payment.amount,
+                label=f"Paiement reçu de {partner.name}"
+            )
+        else:
+            # Pour COD, pas de journal, juste crédit client
+            pass
 
 
 class PartnerAutocomplete(autocomplete.Select2QuerySetView):
@@ -331,4 +352,78 @@ class PartnerAutocomplete(autocomplete.Select2QuerySetView):
             qs = Partner.objects.none()
         return qs
 
+class GeneralLedgerView(APIView):
+    def get(self, request):
+        # Filtrer par période si fournie
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
 
+        entries = JournalItem.objects.all()
+        if start_date:
+            entries = entries.filter(entry__date__gte=start_date)
+        if end_date:
+            entries = entries.filter(entry__date__lte=end_date)
+
+        # Regrouper par compte
+        ledger = {}
+        for item in entries:
+            acc = item.account.name
+            if acc not in ledger:
+                ledger[acc] = {"debit": 0, "credit": 0, "entries": []}
+            ledger[acc]["debit"] += item.debit
+            ledger[acc]["credit"] += item.credit
+            ledger[acc]["entries"].append({
+                "date": item.entry.date,
+                "journal": item.entry.journal.name,
+                "ref": item.entry.reference,
+                "debit": item.debit,
+                "credit": item.credit,
+                "label": item.label
+            })
+
+        return Response(ledger)
+
+class TrialBalanceByTypeView(APIView):
+    def get(self, request):
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        items = JournalItem.objects.all()
+        if start_date:
+            items = items.filter(entry__date__gte=start_date)
+        if end_date:
+            items = items.filter(entry__date__lte=end_date)
+
+        # Organiser les comptes par type
+        account_types = {
+            "Assets": ["asset_cash", "asset_receivable", "asset_other"],
+            "Liabilities": ["liability_payable", "liability_other"],
+            "Income": ["income"],
+            "Expenses": ["expense"]
+        }
+
+        balance_by_type = {}
+        grand_total_debit = 0
+        grand_total_credit = 0
+
+        for type_name, type_keys in account_types.items():
+            balance_by_type[type_name] = []
+            for acc in Account.objects.filter(account_type__in=type_keys):
+                debit = items.filter(account=acc).aggregate(Sum('debit'))['debit__sum'] or 0
+                credit = items.filter(account=acc).aggregate(Sum('credit'))['credit__sum'] or 0
+                balance_by_type[type_name].append({
+                    "code": acc.code,
+                    "name": acc.name,
+                    "debit": debit,
+                    "credit": credit,
+                    "balance": debit - credit
+                })
+                grand_total_debit += debit
+                grand_total_credit += credit
+
+        return Response({
+            "balance_by_type": balance_by_type,
+            "grand_total_debit": grand_total_debit,
+            "grand_total_credit": grand_total_credit,
+            "is_balanced": grand_total_debit == grand_total_credit
+        })

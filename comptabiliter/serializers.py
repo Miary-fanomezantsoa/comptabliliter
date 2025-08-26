@@ -202,7 +202,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 # ==== Order ====
 class OrderSerializer(serializers.ModelSerializer):
-    partner = serializers.StringRelatedField(read_only=True)
+    partner = PartnerSerializer(read_only=True)
     partner_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(),
         source='partner',
@@ -220,7 +220,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-        print("Données items reçues:", items_data)  # debug
+
 
         # Ajouter date par défaut si nécessaire
         if 'date' not in validated_data:

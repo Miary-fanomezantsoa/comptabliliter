@@ -1,6 +1,6 @@
 <template>
   <div class="journal-container">
-    <h2>Journaux</h2>
+    <h2>Choisissez le type de journal</h2>
     <select v-model="selectedJournal" @change="selectJournal(selectedJournal)">
       <option v-for="j in journals" :key="j.id" :value="j">{{ j.name }}</option>
     </select>
@@ -14,12 +14,17 @@
         :class="{ selected: selectedEntry && selectedEntry.id === e.id }"
       >
         {{ e.reference || 'Sans référence' }} - {{ e.date }}
+        |Partenaire :
+    <span>
+
+      {{ e.items[0].account.name || 'Aucun' }}
+    </span>
       </li>
     </ul>
 
-
+   <h2 v-if="journalItems.length">Lignes de l'écriture</h2>
     <table v-if="journalItems.length">
-    <h2>Lignes de l'écriture</h2>
+
       <thead>
         <tr>
           <th>Compte</th>
@@ -40,10 +45,13 @@
 
 
     <div v-if="selectedEntry" class="add-item-form">
-    <h3>Ajouter une ligne</h3>
+    <h3>Ajouter une ligne d'ecriture</h3>
+    <h5>Séléction du partenaire:</h5>
       <select v-model="newItem.account_id">
+      <option disabled value="">Sélectionnez un compte</option>
         <option v-for="c in accounts" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
+
       <input type="number" v-model.number="newItem.debit" placeholder="Débit" />
       <input type="number" v-model.number="newItem.credit" placeholder="Crédit" />
       <input type="text" v-model="newItem.label" placeholder="Libellé" />
@@ -66,8 +74,8 @@ export default {
       accounts: [],
       newItem: {
         account_id: null,
-        debit: 0,
-        credit: 0,
+        debit: null,
+        credit: null,
         label: ''
       },
       loading: false

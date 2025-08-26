@@ -5,14 +5,14 @@
       <li v-for="order in orders" :key="order.id"
           @click="selectOrder(order)"
           :class="{ selected: selectedOrder && selectedOrder.id === order.id }">
-        Commande #{{ order.id }} - {{ order.partner }} - {{ order.status }}
+        Commande #{{ order.id }} - {{ order.partner.name }} - {{ order.status }}
       </li>
     </ul>
 
 
     <div v-if="selectedOrder">
     <h2>Détails de la commande</h2>
-      <p><strong>Client:</strong> {{ selectedOrder.partner }}</p>
+      <p><strong>Client:</strong> {{ selectedOrder.partner.name }}</p>
       <p><strong>Date:</strong> {{ selectedOrder.date }}</p>
       <p><strong>État:</strong> {{ selectedOrder.status }}</p>
       <select v-model="selectedOrder.status" @change="updateOrderStatus(selectedOrder)">
@@ -62,7 +62,7 @@
         <input type="number" v-model.number="newPayment.amount" placeholder="Montant"/>
 <select v-model="newPayment.mode">
     <option disabled value="">Choisir un mode de paiement</option>
-    <option value="cash">caisse directe</option>
+    <option value="Cash">caisse directe</option>
     <option value="card">Carte bancaire</option>
     <option value="mvola">MVola</option>
     <option value="orange">Orange Money</option>
@@ -136,6 +136,12 @@ export default {
       }, 0);
     }
   },
+  async mounted() {
+  if (!this.partners.length) {
+    const res = await api.get("/api/partners/");
+    this.partners = res.data;
+  }
+},
   methods: {
   async updateOrderStatus(order) {
     try {
@@ -163,36 +169,6 @@ export default {
     this.products = res.data;
   },
 
-  async selectOrder(order) {
-    this.selectedOrder = order;
-
-    // Récupérer les items de la commande
-    const resItems = await api.get(`/api/order-items/?order_id=${order.id}`);
-    this.orderItems = resItems.data;
-
-    // Trouver l'objet partenaire
-    let partnerObj = null;
-    if (order.partner?.id) {
-      partnerObj = order.partner;
-    } else if (order.partner_id) {
-      partnerObj = this.partners.find(p => p.id === order.partner_id);
-    } else {
-      partnerObj = this.partners.find(p => p.name === order.partner);
-    }
-
-    if (partnerObj) {
-      // Utiliser l'ID de partnerObj pour récupérer les paiements
-      const resPayments = await api.get(`/api/payments/?partner=${partnerObj.id}`);
-      this.payments = resPayments.data;
-
-      // Mettre à jour selectedOrder.partner pour avoir un objet complet
-      this.selectedOrder.partner = partnerObj;
-    } else {
-      this.payments = [];
-    }
-
-    console.log("selectedOrder complet:", this.selectedOrder);
-  },
 
   addNewItemLine() {
     this.newOrderItems.push({ product_id: null, quantity: 1 });
@@ -235,14 +211,17 @@ export default {
  async addPayment() {
 
   if (!this.selectedOrder || !this.selectedOrder.partner) return;
+  console.log("selectedOrder.partner:", this.selectedOrder.partner);
 
-  const partnerId = this.selectedOrder.partner.id;
+  const partnerId = this.selectedOrder.partner?.id || this.selectedOrder.partner_id;
 if (!partnerId) {
   console.error("Impossible de récupérer l'ID du partenaire !");
   return;
 }
+
+
   const paymentData = {
-    pattern_id: partnerId,// ⚠️ doit correspondre au serializer
+    pattern_id: partnerId,
     amount: Number(this.newPayment.amount),
     mode: this.newPayment.mode,
     description: this.newPayment.description,
@@ -258,7 +237,39 @@ if (!partnerId) {
   } catch (error) {
     console.error("Erreur ajout paiement:", error.response?.data || error);
   }
-}
+},
+
+
+  async selectOrder(order) {
+    this.selectedOrder = order;
+
+    // Récupérer les items de la commande
+    const resItems = await api.get(`/api/order-items/?order_id=${order.id}`);
+    this.orderItems = resItems.data;
+
+    // Trouver l'objet partenaire
+    let partnerObj = null;
+    if (order.partner?.id) {
+      partnerObj = order.partner;
+    } else if (order.partner_id) {
+      partnerObj = this.partners.find(p => p.id === order.partner_id);
+    } else {
+      partnerObj = this.partners.find(p => p.name === order.partner);
+    }
+
+    if (partnerObj) {
+      // Utiliser l'ID de partnerObj pour récupérer les paiements
+      const resPayments = await api.get(`/api/payments/?pattern=${partnerObj.id}`);
+      this.payments = resPayments.data;
+
+      // Mettre à jour selectedOrder.partner pour avoir un objet complet
+      this.selectedOrder.partner = partnerObj;
+    } else {
+      this.payments = [];
+    }
+
+    console.log("selectedOrder complet:", this.selectedOrder);
+  },
 
 
 
