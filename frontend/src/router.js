@@ -6,12 +6,20 @@ import Partners from "./components/PartnerForm.vue"; // <-- importe ton composan
 import PartnerList from './components/PartnerList.vue';
 import JournalManager from './components/JournalManager.vue';
 import CommandePayment from './components/CommandePayment.vue';
+import balance from './components/balance.vue';
+
 const routes = [
   {
     path: '/',
     redirect: '/login', // uniquement redirection
   },
 
+{
+    path: '/balance',
+    name: 'balance',
+    component: balance,
+    meta: { requiresAuth: true }
+  },
   {
     path: '/login',
     name: 'Login',

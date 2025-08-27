@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="container">
     <h2>Commandes</h2>
     <ul>
       <li v-for="order in orders" :key="order.id"
@@ -296,6 +296,55 @@ select, input, button { padding: 6px 10px; margin: 5px 0; border-radius: 6px; bo
 button { background-color: #7b4f4f; color: #fff8f0; cursor: pointer; border: none; transition: 0.3s; }
 button:hover { background-color: #8c5c5c; }
 .product-line { display: flex; gap: 5px; align-items: center; margin-bottom: 5px; }
+.container {
+  max-width: 1000px;       /* largeur maximale pour ne pas être trop large */
+  margin: 0 auto;           /* centre horizontalement */
+  padding: 20px;
+  background-color: #f5ece3;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
 
+/* Centrer les titres */
+h2, h3 {
+  text-align: center;
+}
+
+/* Centrer les listes et tables */
+ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+table {
+  margin: 10px auto;   /* centre la table horizontalement */
+}
+
+/* Formulaires et inputs centrés */
+input, select, button {
+  display: block;
+  margin: 5px auto;    /* centre horizontalement */
+}
+
+/* Centrer les lignes de produits */
+.product-line {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+@media (max-width: 768px) {
+  .container {
+    padding: 10px;
+  }
+  .product-line {
+    flex-direction: column;
+    align-items: center;
+  }
+  table {
+    width: 100%;
+  }
+}
 
 </style>

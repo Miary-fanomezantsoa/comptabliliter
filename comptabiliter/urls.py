@@ -23,7 +23,7 @@ from .admin import PartnerAutocomplete
 from .views import (
     CurrencyViewSet, TaxViewSet, AccountTagViewSet,  # Suppression de AccountViewSet
     JournalViewSet, JournalEntryViewSet, JournalItemViewSet,
-    CompanyViewSet, UserProfileViewSet,
+    CompanyViewSet, UserProfileViewSet,TrialBalanceByTypeView,
     UserDetailView, CompteComptableViewSet, PartnerViewSet,
     CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet  # Ajout de CurrentUserView
 )
@@ -54,6 +54,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/user/', UserDetailView.as_view(), name='user_detail'),
     # L'URL pour la vue CurrentUserView
+    path('api/trial-balance-by-type/', TrialBalanceByTypeView.as_view(), name='trial-balance-by-type'),
     path('api/current-user/', CurrentUserView.as_view(), name='current_user'),
     path('partner-autocomplete/', PartnerAutocomplete.as_view(), name='partner-autocomplete'),
     path("ai/", include("ai_assistant.urls")),

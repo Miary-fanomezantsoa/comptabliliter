@@ -11,7 +11,7 @@
       <router-link to="/journals" class="nav-item">Journal</router-link>
       <router-link to="/partners-list" class="nav-item">Partenaires</router-link>
       <router-link to="/commande&payment" class="nav-item">commande et payment</router-link>
-
+      <router-link to="/balance" class="nav-item">balance</router-link>
     </nav>
 
     <div class="header-right">
@@ -111,4 +111,78 @@ export default {
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
+
+/* Styles existants ... */
+
+@media (max-width: 1024px) {
+  .nav-links {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 5px;
+  }
+
+  .company-name {
+    font-size: 1.3em;
+  }
+
+  .logo {
+    height: 40px;
+  }
+
+  .logout-btn {
+    padding: 6px 12px;
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+  }
+
+  .header-left {
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .nav-item {
+    width: 100%;
+  }
+
+  .header-right {
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-name {
+    font-size: 1.1em;
+  }
+
+  .logo {
+    height: 35px;
+  }
+
+  .nav-item {
+    font-size: 0.9em;
+    padding: 4px 8px;
+  }
+
+  .logout-btn {
+    padding: 5px 10px;
+    font-size: 0.85em;
+  }
+}
+
 </style>
