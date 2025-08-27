@@ -7,6 +7,8 @@ import PartnerList from './components/PartnerList.vue';
 import JournalManager from './components/JournalManager.vue';
 import CommandePayment from './components/CommandePayment.vue';
 import balance from './components/balance.vue';
+import livre from './components/GeneralLedger.vue';
+
 
 const routes = [
   {
@@ -14,6 +16,12 @@ const routes = [
     redirect: '/login', // uniquement redirection
   },
 
+{
+    path: '/livre',
+    name: 'livre',
+    component: livre,
+    meta: { requiresAuth: true }
+  },
 {
     path: '/balance',
     name: 'balance',

@@ -12,6 +12,9 @@
       <router-link to="/partners-list" class="nav-item">Partenaires</router-link>
       <router-link to="/commande&payment" class="nav-item">commande et payment</router-link>
       <router-link to="/balance" class="nav-item">balance</router-link>
+      <router-link to="/livre" class="nav-item">Livre comptable</router-link>
+
+
     </nav>
 
     <div class="header-right">
