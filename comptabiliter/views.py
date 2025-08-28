@@ -383,6 +383,8 @@ class GeneralLedgerView(APIView):
 
         return Response(ledger)
 
+ # Assurez-vous que le modèle Account est importé
+
 class TrialBalanceByTypeView(APIView):
     def get(self, request):
         start_date = request.query_params.get("start_date")
@@ -394,36 +396,114 @@ class TrialBalanceByTypeView(APIView):
         if end_date:
             items = items.filter(entry__date__lte=end_date)
 
-        # Organiser les comptes par type
-        account_types = {
-            "Assets": ["asset_cash", "asset_receivable", "asset_other"],
-            "Liabilities": ["liability_payable", "liability_other"],
-            "Income": ["income"],
-            "Expenses": ["expense"]
+        accounts = Account.objects.all()
+
+        # Ordre prédéfini des comptes par classe pour l'affichage
+        order_classe_1_5 = [
+            "Capital",
+            "Bénéfice reporté",
+            "Perte reportée",
+            "Machines",
+            "Mobilier",
+            "Matériel roulant",
+            "Clients",
+            "Fournisseurs",
+            "Banque",
+            "Caisse"
+        ]
+
+        order_classe_6_7 = [
+            "Achats de marchandises",
+            "Bénéfice reporté",
+            "Perte reportée",
+            "Vente de marchandises"
+        ]
+
+        balance_by_class = {
+            "Classes 1 à 5": {
+                "accounts": [],
+                "total_debit": 0,
+                "total_credit": 0,
+                "total_debit_solde": 0,
+                "total_credit_solde": 0,
+            },
+            "Classes 6 et 7": {
+                "accounts": [],
+                "total_debit": 0,
+                "total_credit": 0,
+                "total_debit_solde": 0,
+                "total_credit_solde": 0,
+            }
         }
 
-        balance_by_type = {}
-        grand_total_debit = 0
-        grand_total_credit = 0
+        grand_total_debit_total = 0
+        grand_total_credit_total = 0
+        grand_total_debit_solde = 0
+        grand_total_credit_solde = 0
 
-        for type_name, type_keys in account_types.items():
-            balance_by_type[type_name] = []
-            for acc in Account.objects.filter(account_type__in=type_keys):
-                debit = items.filter(account=acc).aggregate(Sum('debit'))['debit__sum'] or 0
-                credit = items.filter(account=acc).aggregate(Sum('credit'))['credit__sum'] or 0
-                balance_by_type[type_name].append({
-                    "code": acc.code,
-                    "name": acc.name,
-                    "debit": debit,
-                    "credit": credit,
-                    "balance": debit - credit
-                })
-                grand_total_debit += debit
-                grand_total_credit += credit
+        for acc in accounts:
+            # Calcul des totaux pour le compte
+            debit_total = items.filter(account=acc).aggregate(Sum("debit"))["debit__sum"] or 0
+            credit_total = items.filter(account=acc).aggregate(Sum("credit"))["credit__sum"] or 0
+            debit_solde = max(0, debit_total - credit_total)
+            credit_solde = max(0, credit_total - debit_total)
+
+            account_data = {
+                "code": acc.code,
+                "name": acc.name,
+                "debit_total": debit_total,
+                "credit_total": credit_total,
+                "debit_solde": debit_solde,
+                "credit_solde": credit_solde,
+            }
+
+            # Classe 1 à 5
+            if acc.code and acc.code[0] in "12345":
+                balance_by_class["Classes 1 à 5"]["accounts"].append(account_data)
+                balance_by_class["Classes 1 à 5"]["total_debit"] += debit_total
+                balance_by_class["Classes 1 à 5"]["total_credit"] += credit_total
+                balance_by_class["Classes 1 à 5"]["total_debit_solde"] += debit_solde
+                balance_by_class["Classes 1 à 5"]["total_credit_solde"] += credit_solde
+
+            # Classe 6 et 7
+            elif acc.code and acc.code[0] in "67":
+                balance_by_class["Classes 6 et 7"]["accounts"].append(account_data)
+                balance_by_class["Classes 6 et 7"]["total_debit"] += debit_total
+                balance_by_class["Classes 6 et 7"]["total_credit"] += credit_total
+                balance_by_class["Classes 6 et 7"]["total_debit_solde"] += debit_solde
+                balance_by_class["Classes 6 et 7"]["total_credit_solde"] += credit_solde
+
+            # Mise à jour des grands totaux
+            grand_total_debit_total += debit_total
+            grand_total_credit_total += credit_total
+            grand_total_debit_solde += debit_solde
+            grand_total_credit_solde += credit_solde
+
+        # Trier les comptes selon l'ordre prédéfini
+        def sort_accounts(accounts_list, order_list):
+            sorted_list = []
+            for name in order_list:
+                for acc in accounts_list:
+                    if acc["name"] == name:
+                        sorted_list.append(acc)
+            # Ajouter les comptes restants qui ne sont pas dans l'ordre prédéfini
+            for acc in accounts_list:
+                if acc not in sorted_list:
+                    sorted_list.append(acc)
+            return sorted_list
+
+        balance_by_class["Classes 1 à 5"]["accounts"] = sort_accounts(
+            balance_by_class["Classes 1 à 5"]["accounts"], order_classe_1_5
+        )
+        balance_by_class["Classes 6 et 7"]["accounts"] = sort_accounts(
+            balance_by_class["Classes 6 et 7"]["accounts"], order_classe_6_7
+        )
 
         return Response({
-            "balance_by_type": balance_by_type,
-            "grand_total_debit": grand_total_debit,
-            "grand_total_credit": grand_total_credit,
-            "is_balanced": grand_total_debit == grand_total_credit
+            "balance_by_type": balance_by_class,
+            "grand_total_debit_total": grand_total_debit_total,
+            "grand_total_credit_total": grand_total_credit_total,
+            "grand_total_debit_solde": grand_total_debit_solde,
+            "grand_total_credit_solde": grand_total_credit_solde,
+            "is_balanced": grand_total_debit_total == grand_total_credit_total,
         })

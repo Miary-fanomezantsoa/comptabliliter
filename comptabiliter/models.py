@@ -118,16 +118,31 @@ class Partner(models.Model):
         return f"{self.name} ({'Client' if self.is_client else 'Fournisseur'})"
 
 class Account(models.Model):
-
     ACCOUNT_TYPES = [
         ('asset_receivable', 'Asset Receivable'),
-        ('asset_cash', 'Cash'),
-        ('liability_payable', 'Liability Payable'),
-        ('equity', 'Equity'),
-        ('income', 'Income'),
-        ('expense', 'Expense'),
-    ]
+        # Actif à recevoir : ce sont les créances que l’entreprise doit recevoir, généralement des clients.
+        # Exemple : factures clients non encore payées.
 
+        ('asset_cash', 'Cash'),
+        # Actif liquide : l’argent en caisse ou en banque.
+        # Exemple : caisse, comptes bancaires.
+
+        ('liability_payable', 'Liability Payable'),
+        # Passif à payer : dettes ou obligations de l’entreprise envers des tiers.
+        # Exemple : fournisseurs, dettes fiscales ou sociales.
+
+        ('equity', 'Equity'),
+        # Capitaux propres : fonds apportés par les propriétaires ou les bénéfices accumulés.
+        # Exemple : capital social, réserves, résultat reporté.
+
+        ('income', 'Income'),
+        # Produits / Revenus : ce que l’entreprise gagne.
+        # Exemple : ventes de produits, prestations de services, revenus financiers.
+
+        ('expense', 'Expense'),
+        # Charges / Dépenses : ce que l’entreprise dépense pour son fonctionnement.
+        # Exemple : achats de marchandises, salaires, loyers, frais financiers.
+    ]
     name = models.CharField(max_length=100)
     code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     account_type = models.CharField(max_length=32, choices=ACCOUNT_TYPES)
@@ -137,6 +152,10 @@ class Account(models.Model):
     taxes = models.ManyToManyField("Tax", blank=True)
     tags = models.ManyToManyField("AccountTag", blank=True)
     partner = models.ForeignKey(Partner, null=True, blank=True, on_delete=models.SET_NULL)
+    classe = models.CharField(max_length=1, blank=True, null=True)
+    sous_classe = models.CharField(max_length=2, blank=True, null=True)
+    compte=models.CharField(max_length=3, blank=True, null=True)
+    sous_compte=models.CharField(max_length=4, blank=True, null=True)
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -192,8 +211,6 @@ class HistoriqueModification(models.Model):
     def __str__(self):
         return f"{self.action} - {self.compte.code}"
 
-
-    # nouvelle modell
 
 # Modèle pour les catégories
 class Category(models.Model):
