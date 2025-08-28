@@ -1,0 +1,1720 @@
+{
+  "plan_comptable_general_2005": {
+    "classes": [
+      {
+  "classe_number": 1,
+  "name": "Comptes de capitaux",
+  "accounts": [
+    {
+      "number": "10",
+      "name": "Capital",
+  "subaccounts": [
+    {
+      "number": "101",
+      "name": "Capital",
+      "details": [
+        {"number": "1011", "name": "Capital souscrit, non appelé"},
+        {"number": "1012", "name": "Capital souscrit, appelé, non versé"},
+        {"number": "1013", "name": "Capital souscrit, appelé, versé"},
+        {"number": "1018", "name": "Capital souscrit, non appelé, dans les sociétés à capital variable"}
+      ]
+    },
+    {
+      "number": "104",
+      "name": "Primes liées au capital social",
+      "details": [
+        {"number": "1041", "name": "Primes d'émission"},
+        {"number": "1042", "name": "Primes de fusion"},
+        {"number": "1043", "name": "Primes d'apport"}
+      ]
+    },
+    {
+      "number": "105",
+      "name": "Écarts de réévaluation",
+      "details": [
+        {"number": "1051", "name": "Écarts de réévaluation des immobilisations corporelles"},
+        {"number": "1052", "name": "Écarts de réévaluation des immobilisations financières"}
+      ]
+    },
+    {
+      "number": "106",
+      "name": "Réserves",
+      "details": [
+        {"number": "1061", "name": "Réserve légale"},
+        {"number": "1063", "name": "Réserves statutaires ou contractuelles"},
+        {"number": "1064", "name": "Réserves réglementées"},
+        {"number": "1068", "name": "Autres réserves"}
+      ]
+    },
+    {
+      "number": "107",
+      "name": "Écart d'équivalence",
+      "details": [
+        {"number": "1071", "name": "Écart d'équivalence positif"},
+        {"number": "1079", "name": "Écart d'équivalence négatif"}
+      ]
+    },
+    {
+      "number": "108",
+      "name": "Compte de l'exploitant",
+      "details": [
+        {"number": "1080", "name": "Compte de l'exploitant (apports)"},
+        {"number": "1088", "name": "Compte de l'exploitant (prélèvements)"}
+      ]
+    },
+    {
+      "number": "109",
+      "name": "Actionnaires, capital souscrit non appelé",
+      "details": [
+        {"number": "1090", "name": "Actionnaires, capital souscrit non appelé"}
+      ]
+    }
+  ]
+},
+    {
+      "number": "11",
+      "name": "Report à nouveau",
+      "subaccounts": [
+        {"number": "110", "name": "Report à nouveau (solde créditeur)"},
+        {"number": "119", "name": "Report à nouveau (solde débiteur)"}
+      ]
+    },
+    {
+      "number": "12",
+      "name": "Résultat de l'exercice",
+      "subaccounts": [
+        {"number": "120", "name": "Résultat de l'exercice (bénéfice)"},
+        {"number": "129", "name": "Résultat de l'exercice (perte)"}
+      ]
+    },
+    {
+  "number": "13",
+  "name": "Subventions d'investissement",
+  "subaccounts": [
+    {
+      "number": "131",
+      "name": "Subventions d'équipement",
+      "details": []
+    },
+    {
+      "number": "132",
+      "name": "Autres subventions d'investissement",
+      "details": []
+    },
+    {
+      "number": "133",
+      "name": "Impôts différés actif",
+      "details": []
+    },
+    {
+      "number": "134",
+      "name": "Impôts différés passif",
+      "details": []
+    },
+    {
+      "number": "138",
+      "name": "Autres produits et charges différés",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "14",
+      "name": "Provisions réglementées"
+    },
+    {
+  "number": "15",
+  "name": "Provisions pour charges",
+  "subaccounts": [
+    {
+      "number": "151",
+      "name": "Provisions pour litiges",
+      "details": []
+    },
+    {
+      "number": "153",
+      "name": "Provisions pour pensions et obligations similaires",
+      "details": []
+    },
+    {
+      "number": "154",
+      "name": "Provisions pour impôts",
+      "details": []
+    },
+    {
+      "number": "155",
+      "name": "Provisions pour renouvellement des immobilisations (entreprises concessionnaires)",
+      "details": []
+    },
+    {
+      "number": "156",
+      "name": "Provisions pour charges sociales et fiscales",
+      "details": []
+    },
+    {
+      "number": "157",
+      "name": "Provisions pour amendes et pénalités",
+      "details": []
+    },
+    {
+      "number": "158",
+      "name": "Autres provisions pour charges - passifs non courants",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "16",
+      "name": "Emprunts et dettes assimilées",
+      "subaccounts": [
+        {"number": "161", "name": "Emprunts obligataires convertibles"},
+        {"number": "163", "name": "Autres emprunts obligataires"},
+        {"number": "164", "name": "Emprunts auprès des établissements de crédit"},
+        {"number": "165", "name": "Dépôts et cautionnements reçus"},
+        {"number": "167", "name": "Dettes sur contrat de location-financement"},
+        {"number": "168", "name": "Autres emprunts et dettes assimilés"},
+        {"number": "169", "name": "Primes de remboursement des obligations"}
+      ]
+    },
+    {
+  "number": "17",
+  "name": "Dettes rattachées à des participations",
+  "subaccounts": [
+    {
+      "number": "171",
+      "name": "Dettes rattachées à des participations groupe",
+      "details": []
+    },
+    {
+      "number": "172",
+      "name": "Dettes rattachées à des participations hors groupe",
+      "details": []
+    },
+    {
+      "number": "173",
+      "name": "Dettes rattachées à des sociétés en participation",
+      "details": []
+    },
+    {
+      "number": "174",
+      "name": "Intérêts courus sur dettes rattachées à des participations",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "18",
+      "name": "Comptes de liaison des établissements et sociétés en participation",
+      "subaccounts": [
+        {"number": "181", "name": "Comptes de liaison entre établissements"},
+        {"number": "188", "name": "Comptes de liaison entre sociétés en participation"}
+      ]
+    },
+    {
+  "number": "19",
+  "name": "Dépréciations des comptes de capitaux",
+  "subaccounts": []
+}
+  ]
+},
+      {
+  "classe_number": 2,
+  "name": "Comptes d'immobilisations",
+  "accounts": [
+    {
+  "number": "20",
+  "name": "Immobilisations incorporelles",
+  "subaccounts": [
+    {
+      "number": "201",
+      "name": "Frais d'établissement",
+      "details": [
+        {"number": "2011", "name": "Frais de constitution"},
+        {"number": "2012", "name": "Frais de premier établissement"},
+        {"number": "2013", "name": "Frais d'augmentation de capital et d'opérations assimilées"},
+        {"number": "2014", "name": "Frais d'acquisition d'immobilisations"},
+        {"number": "2015", "name": "Frais de restructuration"}
+      ]
+    },
+    {
+      "number": "203",
+      "name": "Frais de recherche et développement",
+      "details": [
+        {"number": "2031", "name": "Frais de recherche"},
+        {"number": "2032", "name": "Frais de développement"}
+      ]
+    },
+    {
+      "number": "204",
+      "name": "Donations temporaires d'usufruit",
+      "details": []
+    },
+    {
+      "number": "205",
+      "name": "Concessions, brevets, licences, marques, procédés, logiciels",
+      "details": [
+        {"number": "2051", "name": "Concessions et droits similaires"},
+        {"number": "2052", "name": "Brevets, licences, marques"},
+        {"number": "2055", "name": "Logiciels et solutions informatiques"}
+      ]
+    },
+    {
+      "number": "206",
+      "name": "Droit au bail",
+      "details": []
+    },
+    {
+      "number": "207",
+      "name": "Fonds commercial (ou goodwill)",
+      "details": []
+    },
+    {
+      "number": "208",
+      "name": "Autres immobilisations incorporelles",
+      "details": []
+    }
+  ]
+},
+    {
+  "number": "21",
+  "name": "Immobilisations corporelles",
+  "subaccounts": [
+    {
+      "number": "211",
+      "name": "Terrains",
+      "details": [
+        {"number": "2111", "name": "Terrains nus"},
+        {"number": "2112", "name": "Terrains aménagés"}
+      ]
+    },
+    {
+      "number": "212",
+      "name": "Agencements et aménagements de terrains",
+      "details": [
+        {"number": "2121", "name": "Agencements de terrains"},
+        {"number": "2122", "name": "Aménagements de terrains"}
+      ]
+    },
+    {
+      "number": "213",
+      "name": "Constructions",
+      "details": [
+        {"number": "2131", "name": "Bâtiments"},
+        {"number": "2135", "name": "Installations générales, agencements et aménagements des constructions"}
+      ]
+    },
+    {
+      "number": "214",
+      "name": "Constructions sur sol d'autrui",
+      "details": [
+        {"number": "2141", "name": "Bâtiments sur sol d'autrui"},
+        {"number": "2145", "name": "Installations sur sol d'autrui"}
+      ]
+    },
+    {
+      "number": "215",
+      "name": "Installations techniques, matériel et outillage industriels",
+      "details": [
+        {"number": "2151", "name": "Installations techniques"},
+        {"number": "2153", "name": "Matériel industriel"},
+        {"number": "2154", "name": "Outillage industriel"}
+      ]
+    },
+    {
+      "number": "218",
+      "name": "Autres immobilisations corporelles",
+      "details": [
+        {"number": "2181", "name": "Installations générales, agencements, aménagements divers"},
+        {"number": "2182", "name": "Matériel de transport"},
+        {"number": "2183", "name": "Matériel de bureau et informatique"},
+        {"number": "2184", "name": "Mobilier"}
+      ]
+    }
+  ]
+},
+    {
+      "number": "22",
+      "name": "Immobilisations mises en concession",
+      "subaccounts": [
+        {"number": "221", "name": "Immobilisations corporelles mises en concession"}
+      ]
+    },
+    {
+  "number": "23",
+  "name": "Immobilisations en cours",
+  "subaccounts": [
+    {
+      "number": "231",
+      "name": "Immobilisations corporelles en cours",
+      "details": []
+    },
+    {
+      "number": "232",
+      "name": "Immobilisations incorporelles en cours",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "24",
+      "name": "Biens reçus par legs ou donations destinés à être cédés",
+      "subaccounts": [
+        {"number": "241", "name": "Biens reçus par legs ou donations"}
+      ]
+    },
+    {
+      "number": "25",
+      "name": "Parts dans des entreprises liées et créances sur entreprises liées",
+      "subaccounts": [
+        {"number": "251", "name": "Parts dans entreprises liées"},
+        {"number": "252", "name": "Créances sur entreprises liées"}
+      ]
+    },
+    {
+  "number": "26",
+  "name": "Participations et créances rattachées à des participations",
+  "subaccounts": [
+    {
+      "number": "261",
+      "name": "Titres de participation",
+      "details": []
+    },
+    {
+      "number": "266",
+      "name": "Créances rattachées à des participations",
+      "details": []
+    },
+    {
+      "number": "268",
+      "name": "Titres de participation mis en équivalence",
+      "details": []
+    },
+    {
+      "number": "269",
+      "name": "Titres mis en équivalence",
+      "details": []
+    }
+  ]
+},
+    {
+  "number": "27",
+  "name": "Autres immobilisations financières",
+  "subaccounts": [
+    {
+      "number": "271",
+      "name": "Titres immobilisés autres que les titres de participation",
+      "details": []
+    },
+    {
+      "number": "272",
+      "name": "Titres immobilisés de l'activité de portefeuille",
+      "details": []
+    },
+    {
+      "number": "273",
+      "name": "Titres immobilisés d'investissement",
+      "details": []
+    },
+    {
+      "number": "274",
+      "name": "Prêts",
+      "details": []
+    },
+    {
+      "number": "275",
+      "name": "Dépôts et cautionnements versés",
+      "details": []
+    },
+    {
+      "number": "276",
+      "name": "Créances rattachées à des participations (dettes)",
+      "details": []
+    },
+    {
+      "number": "277",
+      "name": "Créances rattachées à des titres immobilisés",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "28",
+      "name": "Amortissements des immobilisations",
+      "subaccounts": [
+        {"number": "280", "name": "Amortissements des immobilisations incorporelles"},
+        {"number": "281", "name": "Amortissements des immobilisations corporelles"},
+        {"number": "282", "name": "Amortissements des immobilisations mises en concession"}
+      ]
+    },
+    {
+  "number": "29",
+  "name": "Dépréciations des immobilisations",
+  "subaccounts": [
+    {
+      "number": "290",
+      "name": "Dépréciations des immobilisations incorporelles",
+      "details": []
+    },
+    {
+      "number": "291",
+      "name": "Dépréciations des immobilisations corporelles",
+      "details": []
+    },
+    {
+      "number": "292",
+      "name": "Dépréciations des immobilisations mises en concession",
+      "details": []
+    },
+    {
+      "number": "293",
+      "name": "Dépréciations des immobilisations en cours",
+      "details": []
+    },
+    {
+      "number": "295",
+      "name": "Dépréciations des parts dans des entreprises liées",
+      "details": []
+    },
+    {
+      "number": "296",
+      "name": "Dépréciations des participations et créances rattachées à des participations",
+      "details": []
+    },
+    {
+      "number": "297",
+      "name": "Dépréciations des autres immobilisations financières",
+      "details": []
+    }
+  ]
+}
+  ]
+}
+,
+      {
+  "classe_number": 3,
+  "name": "Comptes de stocks et en-cours",
+  "accounts": [
+    {
+      "number": "31",
+      "name": "Stocks de matières premières (et fournitures)",
+      "subaccounts": [
+        {"number": "311", "name": "Matières premières"},
+        {"number": "312", "name": "Fournitures consommables"}
+      ]
+    },
+    {
+      "number": "32",
+      "name": "Stocks des autres approvisionnements",
+      "subaccounts": [
+        {"number": "321", "name": "Matières et fournitures consommables"},
+        {"number": "326", "name": "Emballages"}
+      ]
+    },
+    {
+      "number": "33",
+      "name": "En-cours de production de biens",
+      "subaccounts": [
+        {"number": "331", "name": "En-cours de biens"}
+      ]
+    },
+    {
+      "number": "34",
+      "name": "En-cours de production de services",
+      "subaccounts": [
+        {"number": "341", "name": "En-cours de services"}
+      ]
+    },
+    {
+      "number": "35",
+      "name": "Stocks de produits",
+      "subaccounts": [
+        {"number": "351", "name": "Produits intermédiaires"},
+        {"number": "355", "name": "Produits finis"}
+      ]
+    },
+    {
+      "number": "37",
+      "name": "Stocks de marchandises",
+      "subaccounts": [
+        {"number": "371", "name": "Marchandises"}
+      ]
+    },
+    {
+      "number": "39",
+      "name": "Dépréciations des stocks et des en-cours",
+      "subaccounts": [
+        {"number": "391", "name": "Dépréciations des stocks de matières premières"},
+        {"number": "392", "name": "Dépréciations des stocks des autres approvisionnements"},
+        {"number": "393", "name": "Dépréciations des en-cours de production de biens"},
+        {"number": "394", "name": "Dépréciations des en-cours de production de services"},
+        {"number": "395", "name": "Dépréciations des stocks de produits"},
+        {"number": "397", "name": "Dépréciations des stocks de marchandises"}
+      ]
+    }
+  ]
+},
+      {
+  "classe_number": 4,
+  "name": "Comptes de tiers",
+  "accounts": [
+    {
+  "number": "40",
+  "name": "Fournisseurs et comptes rattachés",
+  "subaccounts": [
+    {
+      "number": "401",
+      "name": "Fournisseurs",
+      "details": [
+        {"number": "4010", "name": "Fournisseurs (général)"},
+        {"number": "4011", "name": "Fournisseurs de biens"},
+        {"number": "4012", "name": "Fournisseurs de services"},
+        {"number": "4013", "name": "Fournisseurs de stocks"}
+      ]
+    },
+    {
+      "number": "403",
+      "name": "Fournisseurs - Effets à payer",
+      "details": [
+        {"number": "4030", "name": "Fournisseurs - Effets à payer (général)"},
+        {"number": "4031", "name": "Fournisseurs - Effets de commerce à payer"}
+      ]
+    },
+    {
+      "number": "404",
+      "name": "Fournisseurs d'immobilisations",
+      "details": [
+        {"number": "4040", "name": "Fournisseurs d'immobilisations (général)"},
+        {"number": "4041", "name": "Fournisseurs d'immobilisations incorporelles"},
+        {"number": "4042", "name": "Fournisseurs d'immobilisations corporelles"},
+        {"number": "4043", "name": "Fournisseurs d'immobilisations financières"}
+      ]
+    },
+    {
+      "number": "405",
+      "name": "Fournisseurs d'immobilisations - Effets à payer",
+      "details": [
+        {"number": "4050", "name": "Fournisseurs d'immobilisations - Effets à payer (général)"}
+      ]
+    },
+    {
+      "number": "408",
+      "name": "Fournisseurs - Factures non parvenues",
+      "details": [
+        {"number": "4081", "name": "Fournisseurs de stocks - Factures non parvenues"},
+        {"number": "4084", "name": "Fournisseurs de services - Factures non parvenues"},
+        {"number": "4088", "name": "Fournisseurs d'immobilisations - Factures non parvenues"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "41",
+  "name": "Clients et comptes rattachés",
+  "subaccounts": [
+    {
+      "number": "411",
+      "name": "Clients",
+      "details": [
+        {"number": "4110", "name": "Clients ordinaires"},
+        {"number": "4111", "name": "Clients - Comptes individuels"}
+      ]
+    },
+    {
+      "number": "413",
+      "name": "Clients - Effets à recevoir",
+      "details": [
+        {"number": "4130", "name": "Clients - Effets de commerce à recevoir"}
+      ]
+    },
+    {
+      "number": "416",
+      "name": "Clients douteux ou litigieux",
+      "details": [
+        {"number": "4160", "name": "Clients douteux"},
+        {"number": "4161", "name": "Clients litigieux"}
+      ]
+    },
+    {
+      "number": "418",
+      "name": "Clients - Produits non encore facturés",
+      "details": [
+        {"number": "4181", "name": "Clients - Factures à établir"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "42",
+  "name": "Personnel et comptes rattachés",
+  "subaccounts": [
+    {
+      "number": "421",
+      "name": "Personnel - Rémunérations dues",
+      "details": []
+    },
+    {
+      "number": "422",
+      "name": "Personnel - Dettes liées aux congés payés",
+      "details": []
+    },
+    {
+      "number": "424",
+      "name": "Personnel - Avances et acomptes",
+      "details": []
+    },
+    {
+      "number": "425",
+      "name": "Personnel - Oppositions",
+      "details": []
+    },
+    {
+      "number": "427",
+      "name": "Personnel - Charges à payer",
+      "details": []
+    },
+    {
+      "number": "428",
+      "name": "Personnel - Comptes à régulariser",
+      "details": []
+    }
+  ]
+},
+    {
+  "number": "43",
+  "name": "Sécurité sociale et autres organismes sociaux",
+  "subaccounts": [
+    {
+      "number": "431",
+      "name": "Sécurité sociale - Organismes sociaux",
+      "details": []
+    },
+    {
+      "number": "437",
+      "name": "Autres organismes sociaux",
+      "details": []
+    },
+    {
+      "number": "438",
+      "name": "Charges sur salaires à payer",
+      "details": []
+    }
+  ]
+},
+    {
+      "number": "44",
+      "name": "État et autres collectivités publiques",
+      "subaccounts": [
+        {"number": "441", "name": "État - Impôts sur les bénéfices"},
+        {"number": "444", "name": "État - TVA à régulariser"},
+        {"number": "445", "name": "État - TVA"},
+        {"number": "447", "name": "Impôts et taxes"},
+        {"number": "448", "name": "Charges à payer"}
+      ]
+    },
+    {
+      "number": "45",
+      "name": "Groupe et associés",
+      "subaccounts": [
+        {"number": "451", "name": "Associés - Comptes courants"},
+        {"number": "455", "name": "Associés - Comptes de capitaux"}
+      ]
+    },
+    {
+      "number": "46",
+      "name": "Débiteurs et créditeurs divers",
+      "subaccounts": [
+        {"number": "462", "name": "Créances sur cessions d'immobilisations"},
+        {"number": "464", "name": "Dettes sur cessions d'immobilisations"},
+        {"number": "467", "name": "Autres comptes débiteurs et créditeurs"}
+      ]
+    },
+    {
+      "number": "47",
+      "name": "Comptes transitoires ou d'attente",
+      "subaccounts": [
+        {"number": "471", "name": "Comptes transitoires ou d'attente"}
+      ]
+    },
+    {
+      "number": "48",
+      "name": "Charges et produits constatés d'avance",
+      "subaccounts": [
+        {"number": "486", "name": "Charges constatées d'avance"},
+        {"number": "487", "name": "Produits constatés d'avance"}
+      ]
+    },
+    {
+      "number": "49",
+      "name": "Dépréciations des comptes de tiers",
+      "subaccounts": [
+        {"number": "491", "name": "Dépréciations des comptes clients"},
+        {"number": "496", "name": "Dépréciations des comptes débiteurs divers"}
+      ]
+    }
+  ]
+},
+      {
+  "classe_number": 5,
+  "name": "Comptes financiers",
+  "accounts": [
+    {
+  "number": "50",
+  "name": "Valeurs mobilières de placement",
+  "subaccounts": [
+    {
+      "number": "502",
+      "name": "Actions propres et obligations",
+      "details": [
+        {"number": "5021", "name": "Actions propres"},
+        {"number": "5022", "name": "Actions de sociétés filiales"},
+        {"number": "5023", "name": "Obligations convertibles en actions"}
+      ]
+    },
+    {
+      "number": "503",
+      "name": "Actions",
+      "details": [
+        {"number": "5031", "name": "Actions de sociétés non liées"},
+        {"number": "5035", "name": "Actions d'OPCVM (Organismes de placement collectif en valeurs mobilières)"}
+      ]
+    },
+    {
+      "number": "504",
+      "name": "Autres titres conférant un droit de propriété",
+      "details": [
+        {"number": "5040", "name": "Autres titres de propriété (parts sociales, etc.)"}
+      ]
+    },
+    {
+      "number": "505",
+      "name": "Obligations et bons assimilés",
+      "details": [
+        {"number": "5051", "name": "Obligations simples"},
+        {"number": "5052", "name": "Bons de caisse"},
+        {"number": "5053", "name": "Autres titres de créance négociables"}
+      ]
+    },
+    {
+      "number": "506",
+      "name": "Bons de souscription d'actions",
+      "details": [
+        {"number": "5060", "name": "Bons de souscription d'actions"}
+      ]
+    },
+    {
+      "number": "508",
+      "name": "Autres valeurs mobilières de placement et créances assimilées",
+      "details": [
+        {"number": "5081", "name": "Bons de jouissance"},
+        {"number": "5082", "name": "Droits de souscription"},
+        {"number": "5088", "name": "Autres créances"}
+      ]
+    },
+    {
+      "number": "509",
+      "name": "Versements restant à effectuer sur titres non libérés",
+      "details": [
+        {"number": "5091", "name": "Versements sur actions non libérées"},
+        {"number": "5092", "name": "Versements sur autres titres non libérés"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "51",
+  "name": "Banques, chèques postaux, établissements assimilés",
+  "subaccounts": [
+    {
+      "number": "511",
+      "name": "Valeurs à l'encaissement",
+      "details": [
+        {"number": "5111", "name": "Chèques à encaisser"},
+        {"number": "5112", "name": "Effets à encaisser"}
+      ]
+    },
+    {
+      "number": "512",
+      "name": "Banques",
+      "details": [
+        {"number": "5121", "name": "Banque A (compte courant)"},
+        {"number": "5122", "name": "Banque B (compte courant)"},
+        {"number": "5123", "name": "Comptes de dépôt à terme"}
+      ]
+    },
+    {
+      "number": "514",
+      "name": "Chèques postaux",
+      "details": [
+        {"number": "5141", "name": "CCP (compte courant postal)"},
+        {"number": "5142", "name": "Autres chèques postaux"}
+      ]
+    },
+    {
+      "number": "515",
+      "name": "Crédits de caisse",
+      "details": [
+        {"number": "5151", "name": "Crédit de caisse A"},
+        {"number": "5152", "name": "Crédit de caisse B"}
+      ]
+    }
+  ]
+},
+    {
+      "number": "52",
+      "name": "Instruments de trésorerie"
+    },
+    {
+  "number": "53",
+  "name": "Caisse",
+  "subaccounts": [
+    {
+      "number": "530",
+      "name": "Caisse principale",
+      "details": [
+        {"number": "5301", "name": "Caisse en euro"},
+        {"number": "5302", "name": "Caisse en devises étrangères"}
+      ]
+    }
+  ]
+},
+    {
+      "number": "54",
+      "name": "Instruments financiers"
+    },
+    {
+      "number": "58",
+      "name": "Virements internes",
+      "subaccounts": [
+        {"number": "580", "name": "Virements de fonds"}
+      ]
+    },
+    {
+      "number": "59",
+      "name": "Dépréciations des comptes financiers",
+      "subaccounts": [
+        {"number": "590", "name": "Dépréciations des valeurs mobilières de placement"}
+      ]
+    }
+  ]
+},
+      {
+  "classe_number": 6,
+  "name": "Comptes de charges",
+  "accounts": [
+    {
+  "number": "60",
+  "name": "Achats",
+  "subaccounts": [
+    {
+      "number": "601",
+      "name": "Achats stockés – matières premières",
+      "details": [
+        {"number": "6011", "name": "Achats de matières premières"},
+        {"number": "6012", "name": "Achats de matières premières (spécifique)"}
+      ]
+    },
+    {
+      "number": "602",
+      "name": "Achats stockés – autres approvisionnements",
+      "details": [
+        {"number": "6021", "name": "Achats de matières consommables"},
+        {"number": "6022", "name": "Achats de fournitures consommables"},
+        {"number": "6026", "name": "Achats d'emballages"}
+      ]
+    },
+    {
+      "number": "604",
+      "name": "Achats d'études et prestations de services",
+      "details": [
+        {"number": "6041", "name": "Achats d'études"},
+        {"number": "6042", "name": "Achats de prestations de services"}
+      ]
+    },
+    {
+      "number": "605",
+      "name": "Achats de matériel, équipements et fournitures non stockables",
+      "details": [
+        {"number": "6051", "name": "Achats de petit outillage"},
+        {"number": "6052", "name": "Achats de petit matériel"},
+        {"number": "6053", "name": "Achats de fournitures de bureau"}
+      ]
+    },
+    {
+      "number": "606",
+      "name": "Achats non stockés de matières et fournitures",
+      "details": [
+        {"number": "6061", "name": "Fournitures non stockables"},
+        {"number": "6063", "name": "Eau et énergie"},
+        {"number": "6068", "name": "Autres matières et fournitures"}
+      ]
+    },
+    {
+      "number": "607",
+      "name": "Achats de marchandises",
+      "details": [
+        {"number": "6071", "name": "Achats de marchandises A"},
+        {"number": "6072", "name": "Achats de marchandises B"}
+      ]
+    },
+    {
+      "number": "608",
+      "name": "Frais accessoires sur achats",
+      "details": [
+        {"number": "6081", "name": "Transport sur achats"},
+        {"number": "6082", "name": "Assurance sur achats"},
+        {"number": "6083", "name": "Droits de douane"}
+      ]
+    },
+    {
+      "number": "609",
+      "name": "Rabais, remises et ristournes obtenus sur achats",
+      "details": [
+        {"number": "6091", "name": "Rabais, remises, ristournes sur achats de matières premières"},
+        {"number": "6097", "name": "Rabais, remises, ristournes sur achats de marchandises"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "61",
+  "name": "Services extérieurs",
+  "subaccounts": [
+    {
+      "number": "611",
+      "name": "Sous-traitance générale",
+      "details": [
+        {"number": "6111", "name": "Sous-traitance de production"},
+        {"number": "6112", "name": "Sous-traitance de services"}
+      ]
+    },
+    {
+      "number": "612",
+      "name": "Crédit-bail et locations",
+      "details": [
+        {"number": "6121", "name": "Crédit-bail immobilier"},
+        {"number": "6122", "name": "Crédit-bail mobilier"},
+        {"number": "6125", "name": "Locations immobilières"},
+        {"number": "6126", "name": "Locations mobilières"}
+      ]
+    },
+    {
+      "number": "613",
+      "name": "Locations",
+      "details": [
+        {"number": "6132", "name": "Locations de terrains"},
+        {"number": "6135", "name": "Locations de bâtiments"},
+        {"number": "6136", "name": "Locations de matériel et outillage"}
+      ]
+    },
+    {
+      "number": "614",
+      "name": "Charges locatives et de copropriété",
+      "details": [
+        {"number": "6141", "name": "Charges locatives (locaux)"},
+        {"number": "6142", "name": "Charges de copropriété"}
+      ]
+    },
+    {
+      "number": "615",
+      "name": "Entretien et réparations",
+      "details": [
+        {"number": "6151", "name": "Entretien et réparations des bâtiments"},
+        {"number": "6155", "name": "Entretien et réparations des machines"}
+      ]
+    },
+    {
+      "number": "616",
+      "name": "Primes d'assurances",
+      "details": [
+        {"number": "6161", "name": "Assurances multirisques"},
+        {"number": "6163", "name": "Assurances de véhicules"},
+        {"number": "6168", "name": "Autres primes d'assurances"}
+      ]
+    },
+    {
+      "number": "617",
+      "name": "Études et recherches",
+      "details": [
+        {"number": "6171", "name": "Études de marché"},
+        {"number": "6172", "name": "Frais de recherche"}
+      ]
+    },
+    {
+      "number": "618",
+      "name": "Divers services extérieurs",
+      "details": [
+        {"number": "6181", "name": "Documentation"},
+        {"number": "6182", "name": "Frais de formation"},
+        {"number": "6185", "name": "Frais de contentieux"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "62",
+  "name": "Autres services extérieurs",
+  "subaccounts": [
+    {
+      "number": "621",
+      "name": "Personnel extérieur à l'entreprise",
+      "details": [
+        {"number": "6211", "name": "Personnel intérimaire"},
+        {"number": "6214", "name": "Personnel détaché ou prêté à l'entreprise"}
+      ]
+    },
+    {
+      "number": "622",
+      "name": "Rémunérations d'intermédiaires et honoraires",
+      "details": [
+        {"number": "6221", "name": "Commissions et courtages"},
+        {"number": "6224", "name": "Honoraires (avocats, experts-comptables, notaires)"},
+        {"number": "6225", "name": "Frais d'actes et de contentieux"}
+      ]
+    },
+    {
+      "number": "623",
+      "name": "Publicité, publications, relations publiques",
+      "details": [
+        {"number": "6231", "name": "Annonces et insertions"},
+        {"number": "6232", "name": "Édition et publications"},
+        {"number": "6233", "name": "Foires et expositions"},
+        {"number": "6236", "name": "Catalogues et imprimés"}
+      ]
+    },
+    {
+      "number": "624",
+      "name": "Transports de biens et transports collectifs du personnel",
+      "details": [
+        {"number": "6241", "name": "Transport sur ventes"},
+        {"number": "6242", "name": "Transport entre établissements"},
+        {"number": "6243", "name": "Transport de personnel"}
+      ]
+    },
+    {
+      "number": "625",
+      "name": "Déplacements, missions et réceptions",
+      "details": [
+        {"number": "6251", "name": "Voyages et déplacements"},
+        {"number": "6256", "name": "Missions et réceptions"}
+      ]
+    },
+    {
+      "number": "626",
+      "name": "Frais postaux et de télécommunications",
+      "details": [
+        {"number": "6261", "name": "Frais postaux"},
+        {"number": "6262", "name": "Frais de téléphone, télex, fax"},
+        {"number": "6263", "name": "Frais d'accès à internet"}
+      ]
+    },
+    {
+      "number": "627",
+      "name": "Services bancaires et assimilés",
+      "details": [
+        {"number": "6271", "name": "Frais d'ouverture de crédits"},
+        {"number": "6272", "name": "Commissions et frais sur encaissements"},
+        {"number": "6278", "name": "Autres frais bancaires"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "63",
+  "name": "Impôts, taxes et versements assimilés",
+  "subaccounts": [
+    {
+      "number": "631",
+      "name": "Impôts, taxes et versements sur rémunérations",
+      "details": [
+        {"number": "6311", "name": "Taxe sur les salaires"},
+        {"number": "6312", "name": "Participation des employeurs à l'effort de construction"}
+      ]
+    },
+    {
+      "number": "633",
+      "name": "Impôts, taxes et versements sur immobilisations",
+      "details": [
+        {"number": "6331", "name": "Taxes foncières sur les immeubles"}
+      ]
+    },
+    {
+      "number": "635",
+      "name": "Autres impôts, taxes et versements assimilés",
+      "details": [
+        {"number": "6351", "name": "Taxe sur les véhicules de société"},
+        {"number": "6354", "name": "Droits d'enregistrement et de timbre"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "64",
+  "name": "Charges de personnel",
+  "subaccounts": [
+    {
+      "number": "641",
+      "name": "Rémunérations du personnel",
+      "details": [
+        {"number": "6411", "name": "Salaires, appointements"},
+        {"number": "6412", "name": "Congés payés"},
+        {"number": "6413", "name": "Primes et gratifications"}
+      ]
+    },
+    {
+      "number": "645",
+      "name": "Charges de sécurité sociale et de prévoyance",
+      "details": [
+        {"number": "6451", "name": "Cotisations à l'URSSAF"},
+        {"number": "6453", "name": "Cotisations aux caisses de retraite"},
+        {"number": "6454", "name": "Cotisations aux mutuelles et organismes de prévoyance"}
+      ]
+    },
+    {
+      "number": "647",
+      "name": "Autres charges sociales",
+      "details": [
+        {"number": "6471", "name": "Allocations d'apprentissage"},
+        {"number": "6475", "name": "Médecine du travail"}
+      ]
+    },
+    {
+      "number": "648",
+      "name": "Autres charges de personnel",
+      "details": [
+        {"number": "6481", "name": "Frais de formation du personnel"},
+        {"number": "6482", "name": "Participation des salariés aux résultats"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "65",
+  "name": "Autres charges de gestion courante",
+  "subaccounts": [
+    {
+      "number": "651",
+      "name": "Redevances pour concessions, brevets, licences, marques, logiciels et valeurs similaires",
+      "details": [
+        {"number": "6511", "name": "Redevances sur brevets"},
+        {"number": "6512", "name": "Redevances sur licences"},
+        {"number": "6513", "name": "Redevances sur logiciels"}
+      ]
+    },
+    {
+      "number": "654",
+      "name": "Pertes sur créances irrécouvrables",
+      "details": [
+        {"number": "6541", "name": "Pertes sur créances clients"},
+        {"number": "6542", "name": "Pertes sur autres créances"}
+      ]
+    },
+    {
+      "number": "658",
+      "name": "Charges diverses de gestion courante",
+      "details": [
+        {"number": "6581", "name": "Cadeaux à la clientèle"},
+        {"number": "6582", "name": "Jetons de présence"},
+        {"number": "6583", "name": "Frais de justice et de contentieux"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "66",
+  "name": "Charges financières",
+  "subaccounts": [
+    {
+      "number": "661",
+      "name": "Charges d'intérêts",
+      "details": [
+        {"number": "6611", "name": "Intérêts des emprunts et dettes"},
+        {"number": "6615", "name": "Intérêts des comptes courants et des dépôts créditeurs"},
+        {"number": "6616", "name": "Intérêts bancaires et sur opérations de financement"},
+        {"number": "6618", "name": "Intérêts des autres dettes"}
+      ]
+    },
+    {
+      "number": "664",
+      "name": "Pertes sur créances liées à des participations",
+      "details": []
+    },
+    {
+      "number": "665",
+      "name": "Escomptes accordés",
+      "details": []
+    },
+    {
+      "number": "666",
+      "name": "Pertes de change",
+      "details": []
+    },
+    {
+      "number": "667",
+      "name": "Charges nettes sur cessions de valeurs mobilières de placement",
+      "details": []
+    },
+    {
+      "number": "668",
+      "name": "Autres charges financières",
+      "details": [
+        {"number": "6681", "name": "Pénalités sur marchés et dédits"},
+        {"number": "6688", "name": "Autres charges financières diverses"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "67",
+  "name": "Charges exceptionnelles",
+  "subaccounts": [
+    {
+      "number": "671",
+      "name": "Charges exceptionnelles sur opérations de gestion",
+      "details": [
+        {"number": "6712", "name": "Pénalités, amendes fiscales"},
+        {"number": "6713", "name": "Dons et libéralités accordés"},
+        {"number": "6714", "name": "Créances devenues irrécouvrables"},
+        {"number": "6718", "name": "Autres charges exceptionnelles sur opérations de gestion"}
+      ]
+    },
+    {
+      "number": "675",
+      "name": "Valeurs comptables des immobilisations cédées",
+      "details": [
+        {"number": "6751", "name": "Valeur comptable des immobilisations incorporelles cédées"},
+        {"number": "6752", "name": "Valeur comptable des immobilisations corporelles cédées"},
+        {"number": "6756", "name": "Valeur comptable des immobilisations financières cédées"}
+      ]
+    },
+    {
+      "number": "678",
+      "name": "Autres charges exceptionnelles",
+      "details": [
+        {"number": "6781", "name": "Missions, réceptions et déplacements exceptionnels"},
+        {"number": "6788", "name": "Charges exceptionnelles diverses"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "68",
+  "name": "Dotations aux amortissements, aux dépréciations et aux provisions",
+  "subaccounts": [
+    {
+      "number": "681",
+      "name": "Dotations d'exploitation",
+      "details": [
+        {"number": "6811", "name": "Dotations aux amortissements des immobilisations incorporelles et corporelles"},
+        {"number": "6815", "name": "Dotations aux provisions pour risques et charges d'exploitation"},
+        {"number": "6816", "name": "Dotations aux provisions pour dépréciation des stocks et en-cours"},
+        {"number": "6817", "name": "Dotations aux provisions pour dépréciation des comptes de tiers"}
+      ]
+    },
+    {
+      "number": "686",
+      "name": "Dotations financières",
+      "details": [
+        {"number": "6861", "name": "Dotations aux amortissements des immobilisations financières"},
+        {"number": "6865", "name": "Dotations aux provisions pour risques et charges financières"},
+        {"number": "6866", "name": "Dotations aux dépréciations des immobilisations financières"},
+        {"number": "6867", "name": "Dotations aux dépréciations des valeurs mobilières de placement"}
+      ]
+    },
+    {
+      "number": "687",
+      "name": "Dotations exceptionnelles",
+      "details": [
+        {"number": "6871", "name": "Dotations aux amortissements exceptionnels"},
+        {"number": "6875", "name": "Dotations aux provisions exceptionnelles pour risques et charges"},
+        {"number": "6876", "name": "Dotations aux dépréciations exceptionnelles des éléments d'actifs"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "69",
+  "name": "Impôts sur les bénéfices et participation des salariés",
+  "subaccounts": [
+    {
+      "number": "691",
+      "name": "Participation des salariés aux résultats",
+      "details": [
+        {"number": "6911", "name": "Participation des salariés (base de calcul)"},
+        {"number": "6912", "name": "Participation des salariés (régularisations)"}
+      ]
+    },
+    {
+      "number": "695",
+      "name": "Impôts sur les bénéfices",
+      "details": [
+        {"number": "6951", "name": "Impôts sur les sociétés"},
+        {"number": "6952", "name": "Impôts sur les bénéfices (sociétés de personnes)"}
+      ]
+    }
+  ]
+}
+  ]
+},
+      {
+  "classe_number": 7,
+  "name": "Comptes de produits",
+  "accounts": [
+    {
+  "number": "70",
+  "name": "Ventes de produits fabriqués, prestations de services, marchandises",
+  "subaccounts": [
+    {
+      "number": "701",
+      "name": "Ventes de produits finis",
+      "details": [
+        {"number": "7011", "name": "Ventes de produits finis (A)"},
+        {"number": "7012", "name": "Ventes de produits finis (B)"}
+      ]
+    },
+    {
+      "number": "702",
+      "name": "Ventes de produits intermédiaires",
+      "details": [
+        {"number": "7021", "name": "Ventes de produits intermédiaires (A)"}
+      ]
+    },
+    {
+      "number": "703",
+      "name": "Ventes de produits résiduels",
+      "details": [
+        {"number": "7031", "name": "Ventes de déchets et rebuts"},
+        {"number": "7032", "name": "Ventes de produits de récupération"}
+      ]
+    },
+    {
+      "number": "704",
+      "name": "Travaux",
+      "details": [
+        {"number": "7041", "name": "Travaux immobiliers"},
+        {"number": "7042", "name": "Travaux publics"}
+      ]
+    },
+    {
+      "number": "705",
+      "name": "Études",
+      "details": [
+        {"number": "7051", "name": "Études techniques"},
+        {"number": "7052", "name": "Études commerciales"}
+      ]
+    },
+    {
+      "number": "706",
+      "name": "Prestations de services",
+      "details": [
+        {"number": "7061", "name": "Prestations de services (A)"},
+        {"number": "7062", "name": "Prestations de services (B)"}
+      ]
+    },
+    {
+      "number": "707",
+      "name": "Ventes de marchandises",
+      "details": [
+        {"number": "7071", "name": "Ventes de marchandises (A)"},
+        {"number": "7072", "name": "Ventes de marchandises (B)"}
+      ]
+    },
+    {
+      "number": "708",
+      "name": "Produits des activités annexes",
+      "details": [
+        {"number": "7081", "name": "Produits de location immobilière"},
+        {"number": "7083", "name": "Produits de location mobilière"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "71",
+  "name": "Production stockée",
+  "subaccounts": [
+    {
+      "number": "713",
+      "name": "Variation des stocks et des en-cours",
+      "details": [
+        {"number": "7131", "name": "Variation des en-cours de production de biens"},
+        {"number": "7132", "name": "Variation des en-cours de production de services"},
+        {"number": "7133", "name": "Variation des stocks de produits en cours"},
+        {"number": "7134", "name": "Variation des stocks de produits finis"},
+        {"number": "7135", "name": "Variation des stocks de produits intermédiaires"},
+        {"number": "7136", "name": "Variation des stocks de produits résiduels"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "72",
+  "name": "Production immobilisée",
+  "subaccounts": [
+    {
+      "number": "721",
+      "name": "Production immobilisée d'immobilisations incorporelles",
+      "details": [
+        {"number": "7211", "name": "Logiciels créés par l'entreprise"},
+        {"number": "7215", "name": "Brevets, marques et droits similaires"}
+      ]
+    },
+    {
+      "number": "722",
+      "name": "Production immobilisée d'immobilisations corporelles",
+      "details": [
+        {"number": "7221", "name": "Production d'immobilisations en cours"},
+        {"number": "7222", "name": "Production de terrains"},
+        {"number": "7225", "name": "Production de constructions"}
+      ]
+    }
+  ]
+},
+    {
+      "number": "73",
+      "name": "Non utilisé"
+    },
+    {
+  "number": "74",
+  "name": "Subventions d'exploitation",
+  "subaccounts": [
+    {
+      "number": "741",
+      "name": "Subventions d'équilibre",
+      "details": [
+        {"number": "7411", "name": "Subventions d'équilibre de l'État"},
+        {"number": "7412", "name": "Subventions d'équilibre des collectivités territoriales"},
+        {"number": "7418", "name": "Autres subventions d'équilibre"}
+      ]
+    },
+    {
+      "number": "748",
+      "name": "Autres subventions d'exploitation",
+      "details": [
+        {"number": "7481", "name": "Subventions de fonctionnement"},
+        {"number": "7482", "name": "Subventions pour charges de personnel"},
+        {"number": "7488", "name": "Autres subventions d'exploitation diverses"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "75",
+  "name": "Autres produits de gestion courante",
+  "subaccounts": [
+    {
+      "number": "751",
+      "name": "Redevances pour concessions, brevets, licences, marques, logiciels et valeurs similaires",
+      "details": [
+        {"number": "7511", "name": "Redevances pour concessions et brevets"},
+        {"number": "7512", "name": "Redevances pour licences et marques"},
+        {"number": "7513", "name": "Redevances sur logiciels"},
+        {"number": "7516", "name": "Droits d'auteurs et de reproduction"}
+      ]
+    },
+    {
+      "number": "752",
+      "name": "Revenus des immeubles non affectés aux activités professionnelles",
+      "details": [
+        {"number": "7521", "name": "Revenus locatifs"}
+      ]
+    },
+    {
+      "number": "753",
+      "name": "Jetons de présence et tantièmes",
+      "details": [
+        {"number": "7531", "name": "Jetons de présence"},
+        {"number": "7532", "name": "Tantièmes"}
+      ]
+    },
+    {
+      "number": "754",
+      "name": "Ristournes perçues des coopératives",
+      "details": [
+        {"number": "7541", "name": "Ristournes sur achats"}
+      ]
+    },
+    {
+      "number": "758",
+      "name": "Produits divers de gestion courante",
+      "details": [
+        {"number": "7581", "name": "Gains de change sur créances et dettes commerciales"},
+        {"number": "7582", "name": "Indemnités et dédits reçus"},
+        {"number": "7583", "name": "Missions, réceptions et déplacements refacturés"},
+        {"number": "7588", "name": "Autres produits divers"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "76",
+  "name": "Produits financiers",
+  "subaccounts": [
+    {
+      "number": "761",
+      "name": "Produits des participations",
+      "details": [
+        {"number": "7611", "name": "Dividendes reçus des participations"}
+      ]
+    },
+    {
+      "number": "762",
+      "name": "Produits des autres titres immobilisés",
+      "details": [
+        {"number": "7621", "name": "Revenus des titres immobilisés"}
+      ]
+    },
+    {
+      "number": "763",
+      "name": "Revenus des autres créances",
+      "details": [
+        {"number": "7631", "name": "Intérêts des prêts"},
+        {"number": "7632", "name": "Intérêts des créances commerciales"}
+      ]
+    },
+    {
+      "number": "764",
+      "name": "Revenus des valeurs mobilières de placement",
+      "details": [
+        {"number": "7641", "name": "Revenus d'actions"},
+        {"number": "7642", "name": "Revenus d'obligations"}
+      ]
+    },
+    {
+      "number": "765",
+      "name": "Escomptes obtenus",
+      "details": [
+        {"number": "7651", "name": "Escomptes sur achats de biens"},
+        {"number": "7652", "name": "Escomptes sur services"}
+      ]
+    },
+    {
+      "number": "766",
+      "name": "Gains de change sur créances et dettes libellées en monnaies étrangères",
+      "details": [
+        {"number": "7661", "name": "Gains de change sur créances"},
+        {"number": "7662", "name": "Gains de change sur dettes"}
+      ]
+    },
+    {
+      "number": "767",
+      "name": "Produits nets sur cessions de valeurs mobilières de placement",
+      "details": [
+        {"number": "7671", "name": "Produits nets de cession d'actions"},
+        {"number": "7672", "name": "Produits nets de cession d'obligations"}
+      ]
+    },
+    {
+      "number": "768",
+      "name": "Autres produits financiers",
+      "details": [
+        {"number": "7681", "name": "Produits des prêts bancaires"},
+        {"number": "7688", "name": "Produits financiers divers"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "77",
+  "name": "Produits exceptionnels",
+  "subaccounts": [
+    {
+      "number": "771",
+      "name": "Produits exceptionnels sur opérations de gestion",
+      "details": [
+        {"number": "7711", "name": "Dédits et pénalités perçus"},
+        {"number": "7718", "name": "Autres produits exceptionnels sur opérations de gestion"}
+      ]
+    },
+    {
+      "number": "775",
+      "name": "Produits des cessions d'éléments d'actif",
+      "details": [
+        {"number": "7751", "name": "Produits des cessions d'immobilisations incorporelles"},
+        {"number": "7752", "name": "Produits des cessions d'immobilisations corporelles"},
+        {"number": "7756", "name": "Produits des cessions d'immobilisations financières"}
+      ]
+    },
+    {
+      "number": "777",
+      "name": "Quote-part de subventions d'investissement virée au résultat de l'exercice",
+      "details": [
+        {"number": "7771", "name": "Subventions d'équipement"},
+        {"number": "7772", "name": "Subventions d'aménagement du territoire"}
+      ]
+    },
+    {
+      "number": "778",
+      "name": "Autres produits exceptionnels",
+      "details": [
+        {"number": "7781", "name": "Indemnités et dédits"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "78",
+  "name": "Reprises sur amortissements, dépréciations et provisions",
+  "subaccounts": [
+    {
+      "number": "781",
+      "name": "Reprises sur dépréciations et provisions - Charges d'exploitation",
+      "details": [
+        {"number": "7811", "name": "Reprises sur dépréciations des immobilisations incorporelles et corporelles"},
+        {"number": "7815", "name": "Reprises sur provisions pour risques et charges d'exploitation"},
+        {"number": "7816", "name": "Reprises sur dépréciations des stocks et en-cours"},
+        {"number": "7817", "name": "Reprises sur dépréciations des comptes de tiers"}
+      ]
+    },
+    {
+      "number": "786",
+      "name": "Reprises sur dépréciations et provisions - Charges financières",
+      "details": [
+        {"number": "7861", "name": "Reprises sur dépréciations des immobilisations financières"},
+        {"number": "7865", "name": "Reprises sur provisions pour risques et charges financières"},
+        {"number": "7866", "name": "Reprises sur dépréciations des valeurs mobilières de placement"}
+      ]
+    },
+    {
+      "number": "787",
+      "name": "Reprises sur dépréciations et provisions - Charges exceptionnelles",
+      "details": [
+        {"number": "7875", "name": "Reprises sur provisions pour risques et charges exceptionnels"},
+        {"number": "7876", "name": "Reprises sur dépréciations exceptionnelles des éléments d'actifs"}
+      ]
+    }
+  ]
+},
+    {
+  "number": "79",
+  "name": "Transferts de charges",
+  "subaccounts": [
+    {
+      "number": "791",
+      "name": "Transferts de charges d'exploitation",
+      "details": [
+        {"number": "7911", "name": "Transferts de charges d'exploitation vers la production immobilisée"},
+        {"number": "7912", "name": "Transferts de charges d'exploitation vers les subventions"}
+      ]
+    },
+    {
+      "number": "796",
+      "name": "Transferts de charges financières",
+      "details": [
+        {"number": "7961", "name": "Transferts de charges financières vers la production immobilisée"}
+      ]
+    },
+    {
+      "number": "797",
+      "name": "Transferts de charges exceptionnelles",
+      "details": [
+        {"number": "7971", "name": "Transferts de charges exceptionnelles vers la production immobilisée"}
+      ]
+    }
+  ]
+}
+  ]
+}
+
+    ]
+  }
+}

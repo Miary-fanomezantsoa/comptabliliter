@@ -51,6 +51,42 @@
   <option value="" disabled>Choisir une devise</option>
   <option v-for="c in currencies" :key="c.id" :value="c.id">{{ c.name }}</option>
 </select>
+<!-- Partie formulaire (dans la modal) -->
+<!-- Classe -->
+<label for="classe">Classe :</label>
+<select v-model="form.classe" id="classe" @change="onClasseChange">
+  <option value="" disabled>Choisir une classe</option>
+  <option v-for="c in planComptable.classes" :key="c.classe_number" :value="c.classe_number">
+    {{ c.classe_number }} - {{ c.name }}
+  </option>
+</select>
+
+<!-- Sous-classe -->
+<label for="sous_classe">Sous-classe :</label>
+<select v-model="form.sous_classe" id="sous_classe" @change="onSousClasseChange">
+  <option value="" disabled>Choisir une sous-classe</option>
+  <option v-for="sc in sousClassesDisponibles" :key="sc.number" :value="sc.number">
+    {{ sc.number }} - {{ sc.name }}
+  </option>
+</select>
+
+<!-- Compte -->
+<label for="compte">Compte :</label>
+<select v-model="form.compte" id="compte" @change="onCompteChange">
+  <option value="" disabled>Choisir un compte</option>
+  <option v-for="c in comptesDisponibles" :key="c.number" :value="c.number">
+    {{ c.number }} - {{ c.name }}
+  </option>
+</select>
+
+<!-- Sous-compte -->
+<label for="sous_compte">Sous-compte :</label>
+<select v-model="form.sous_compte" id="sous_compte" @change="onSousCompteChange">
+  <option value="" disabled>Choisir un sous-compte</option>
+  <option v-for="sc in sousComptesDisponibles" :key="sc.number" :value="sc.number">
+    {{ sc.number }} - {{ sc.name }}
+  </option>
+</select>
 
 
   <!-- Rapprochement -->
@@ -124,11 +160,16 @@
 </template>
 <script>
 import api from '../axios.js';
+import plan_comptable_general_2005 from '../../compte.json';
 
 export default {
   data() {
     return {
+    planComptable: plan_comptable_general_2005.plan_comptable_general_2005,
       comptes: [],
+      sousClassesDisponibles: [],
+      comptesDisponibles: [],
+      sousComptesDisponibles: [],
 form: {
       id: null,
       code: '',
@@ -139,7 +180,11 @@ form: {
       note: '',
       taxes: [],
       tags: [],
-      partner: null
+      partner: null,
+      classe: '',
+        sous_classe: '',
+        compte: '',
+        sous_compte: ''
     },
     currencies: [],  // liste des devises depuis l'API
     taxes: [],       // liste des taxes depuis l'API
@@ -164,6 +209,32 @@ form: {
   requiresPartner(type) {
       // Les types qui nécessitent un partenaire
       return ["asset_receivable", "liability_payable"].includes(type);
+    },
+    onClasseChange() {
+      const classe = this.planComptable.classes.find(c => c.classe_number === this.form.classe);
+      this.sousClassesDisponibles = classe ? classe.accounts : [];
+      this.form.sous_classe = '';
+      this.comptesDisponibles = [];
+      this.sousComptesDisponibles = [];
+    },
+    onSousClasseChange() {
+      const sc = this.sousClassesDisponibles.find(s => s.number === this.form.sous_classe);
+      this.comptesDisponibles = sc ? sc.subaccounts : [];
+      this.form.compte = '';
+      this.sousComptesDisponibles = [];
+    },
+    onCompteChange() {
+      const compte = this.comptesDisponibles.find(c => c.number === this.form.compte);
+      this.sousComptesDisponibles = compte ? compte.details : [];
+      this.form.sous_compte = '';
+    },
+    onSousCompteChange() {
+      // Quand l’utilisateur choisit le sous-compte final → remplir automatiquement code + name
+      const sousCompte = this.sousComptesDisponibles.find(s => s.number === this.form.sous_compte);
+      if (sousCompte) {
+        this.form.code = sousCompte.number;
+        this.form.name = sousCompte.name;
+      }
     },
   openModal(compte = null) {
     if(compte) this.form = {
