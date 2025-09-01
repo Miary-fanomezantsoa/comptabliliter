@@ -23,9 +23,10 @@ from .admin import PartnerAutocomplete
 from .views import (
     CurrencyViewSet, TaxViewSet, AccountTagViewSet,  # Suppression de AccountViewSet
     JournalViewSet, JournalEntryViewSet, JournalItemViewSet,
-    CompanyViewSet, UserProfileViewSet,TrialBalanceByTypeView,GeneralLedgerView,
+    CompanyViewSet, UserProfileViewSet, TrialBalanceByTypeView, GeneralLedgerView,
     UserDetailView, CompteComptableViewSet, PartnerViewSet,
-    CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet  # Ajout de CurrentUserView
+    CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet,
+    InvoiceViewSet  # Ajout de CurrentUserView
 )
 from django.contrib import admin
 
@@ -46,6 +47,7 @@ router.register(r'journal-items', JournalItemViewSet)
 router.register(r'companies', CompanyViewSet)
 router.register(r'user-profiles', UserProfileViewSet)
 router.register(r'partners', PartnerViewSet)
+router.register(r'invoices', InvoiceViewSet)
 urlpatterns = [
     path('', RedirectView.as_view(url='http://localhost:5173/', permanent=False)),
     path('admin/', admin.site.urls),

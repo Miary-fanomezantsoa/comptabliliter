@@ -1,60 +1,107 @@
 <template>
-  <div class="partner-list">
-    <div class="header">
-      <h2>Liste des partenaires</h2>
-      <button class="btn-create" @click="goToCreate">➕ Créer un partenaire</button>
+  <div class="min-h-screen p-6 bg-gray-50 font-sans">
+    <div class="max-w-full mx-auto">
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-orange-900 mb-4 sm:mb-0">Liste des partenaires</h2>
+        <button @click="goToCreate"
+                class="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition">
+          ➕ Créer un partenaire
+        </button>
+      </div>
+
+      <!-- Barre de recherche -->
+      <div class="mb-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <input v-model="searchQuery"
+               type="text"
+               placeholder="Rechercher un partenaire..."
+               class="w-full sm:w-64 p-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600"/>
+      </div>
+
+      <!-- Tableau -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg shadow-lg text-sm sm:text-base">
+          <thead class="bg-orange-700 text-white">
+            <tr>
+              <th class="px-4 py-2 text-left">ID</th>
+              <th class="px-4 py-2 text-left">Nom</th>
+              <th class="px-4 py-2 text-left">Email</th>
+              <th class="px-4 py-2 text-left">Entreprise</th>
+              <th class="px-4 py-2 text-left">Numéro</th>
+              <th class="px-4 py-2 text-left">Rue</th>
+              <th class="px-4 py-2 text-left">Ville</th>
+              <th class="px-4 py-2 text-left">Pays</th>
+              <th class="px-4 py-2 text-left">Type</th>
+              <th class="px-4 py-2 text-left">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="partner in filteredPartners" :key="partner.id"
+                class="odd:bg-white even:bg-orange-50 hover:bg-orange-100 transition">
+              <td class="px-4 py-2">{{ partner.id }}</td>
+              <td class="px-4 py-2">{{ partner.name }}</td>
+              <td class="px-4 py-2">{{ partner.email || '-' }}</td>
+              <td class="px-4 py-2">{{ partner.company ? partner.company.name : '-' }}</td>
+              <td class="px-4 py-2">{{ partner.phone || '-' }}</td>
+              <td class="px-4 py-2">{{ partner.street || '-' }}</td>
+              <td class="px-4 py-2">{{ partner.city || '-' }}</td>
+              <td class="px-4 py-2">{{ partner.country || '-' }}</td>
+              <td class="px-4 py-2">{{ partner.type || '-' }}</td>
+              <td class="px-4 py-2 space-x-2">
+                <button @click="goToEdit(partner.id)"
+                        class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition text-sm">
+                  ✏️ Modifier
+                </button>
+                <button @click="deletePartner(partner.id)"
+                        class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
+                  🗑️ Supprimer
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Messages -->
+      <p v-if="loading" class="text-center font-semibold text-orange-700 mt-4">Chargement...</p>
+      <p v-if="error" class="text-center font-semibold text-red-700 mt-4">{{ error }}</p>
     </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nom</th>
-          <th>Email</th>
-          <th>Entreprise</th>
-          <th>Numéro</th>
-          <th>Rue</th>
-          <th>Ville</th>
-          <th>Pays</th>
-          <th>Type</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="partner in partners" :key="partner.id">
-          <td>{{ partner.id }}</td>
-          <td>{{ partner.name }}</td>
-          <td>{{ partner.email }}</td>
-          <td>{{ partner.company ? partner.company.name : '-' }}</td>
-          <td>{{ partner.phone || '-' }}</td>
-          <td>{{ partner.street || '-' }}</td>
-          <td>{{ partner.city || '-' }}</td>
-          <td>{{ partner.country || '-' }}</td>
-          <td>{{ partner.type || '-' }}</td>
-          <td>
-            <button class="btn-edit" @click="goToEdit(partner.id)">✏️ Modifier</button>
-            <button class="btn-delete" @click="deletePartner(partner.id)">🗑️ Supprimer</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p v-if="loading">Chargement...</p>
-    <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
 
+
 <script>
 import api from '../axios';
+
 export default {
   name: 'PartnerList',
   data() {
     return {
       partners: [],
+      searchQuery: '',
       loading: false,
       error: null,
     };
   },
+  computed: {
+  filteredPartners() {
+    if (!this.searchQuery) return this.partners;
+
+    const q = this.searchQuery.toLowerCase();
+
+    return this.partners.filter(p => {
+      const companyName = p.company?.name || ''; // <-- protection ici
+      return (
+        String(p.id).includes(q) ||          // recherche par ID
+        p.name.toLowerCase().includes(q) ||  // recherche par nom
+        (p.email && p.email.toLowerCase().includes(q)) ||
+        companyName.toLowerCase().includes(q) // recherche par entreprise
+      );
+    });
+  }
+},
+
+
   created() {
     this.fetchPartners();
   },
@@ -63,7 +110,7 @@ export default {
       this.loading = true;
       try {
         const token = localStorage.getItem('access_token');
-        const response = await api.get('http://localhost:8000/api/partners/', {
+        const response = await api.get('/api/partners/', {
           headers: { Authorization: `Bearer ${token}` },
         });
         this.partners = response.data;
@@ -76,127 +123,28 @@ export default {
     },
 
     goToCreate() {
-      this.$router.push({ name: 'Partners' }); // la route de création
+      this.$router.push({ name: 'Partners' }); // route de création
     },
 
-    goToEdit(id) {
-      this.$router.push({ name: 'EditPartner', params: { id } }); // prévoir la route EditPartner
-    },
+   goToEdit(id) {
+  // redirige vers le formulaire de création/modification avec le paramètre partnerId
+  this.$router.push({ name: 'Partners', params: { partnerId: id } });
+},
+
 
     async deletePartner(id) {
-      if (!confirm("Voulez-vous vraiment supprimer ce partenaire ?")) return;
+      if (!confirm('Voulez-vous vraiment supprimer ce partenaire ?')) return;
       try {
         const token = localStorage.getItem('access_token');
-        await api.delete(`http://localhost:8000/api/partners/${id}/`, {
+        await api.delete(`/api/partners/${id}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         this.partners = this.partners.filter(p => p.id !== id);
       } catch (err) {
         console.error(err);
-        alert("Erreur lors de la suppression.");
+        alert('Erreur lors de la suppression.');
       }
-    }
-  }
+    },
+  },
 };
 </script>
-<style scoped>
-.partner-list {
-  margin: 2rem;
-  font-family: 'Roboto', sans-serif;
-  background: #fff8f0;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-/* Titre */
-.partner-list h2 {
-  color: #4b2e2b;
-  font-family: 'Pacifico', cursive;
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-  text-align: center;
-}
-
-/* Bouton créer */
-.btn-create {
-  background-color: #d2691e; /* caramel */
-  color: #fff;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 1rem;
-  transition: background 0.3s ease;
-}
-.btn-create:hover {
-  background-color: #8b4513; /* brun chocolat */
-}
-
-/* Tableau */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #fff4e6;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-}
-
-thead th {
-  background-color: #8b4513; /* brun chocolat */
-  color: #fff;
-  font-weight: 600;
-}
-
-tbody tr:nth-child(even) {
-  background-color: #ffe6cc; /* beige clair */
-}
-
-tbody tr:hover {
-  background-color: #f2d1a1; /* caramel clair */
-}
-
-/* Boutons Modifier / Supprimer */
-.btn-edit, .btn-delete {
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  margin-right: 5px;
-  color: #fff;
-  font-weight: bold;
-  transition: all 0.3s ease;
-}
-
-.btn-edit {
-  background-color: #c2691e;
-}
-.btn-edit:hover {
-  background-color: #8b4513;
-}
-
-.btn-delete {
-  background-color: #a52a2a; /* rouge brun */
-}
-.btn-delete:hover {
-  background-color: #7b1f1f;
-}
-
-/* Messages chargement / erreur */
-p {
-  margin-top: 1rem;
-  font-weight: bold;
-  text-align: center;
-}
-
-p[style*="color: red"] {
-  color: #a52a2a;
-}
-</style>
-

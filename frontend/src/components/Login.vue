@@ -1,32 +1,54 @@
 <template>
-  <div class="login-container">
-    <div class="login-logo">
-      <img src="../../public/logo_rm_bg.png" alt="Chocolaterie Robert" />
-      <h1>Chocolaterie Robert</h1>
-    </div>
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-200 to-orange-400 p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 relative overflow-hidden">
+      <!-- Logo -->
+      <div class="text-center mb-6 animate-fadeInDown">
+        <img src="../../public/logo_rm_bg.png" alt="Chocolaterie Robert" class="w-20 mx-auto mb-2" />
+        <h1 class="text-3xl font-pacifico text-orange-800">Chocolaterie Robert</h1>
+      </div>
 
-    <form @submit.prevent="login" class="login-form" :class="{ 'animate': loading }">
-      <input
-        v-model="username"
-        placeholder="Nom d'utilisateur"
-        required
-        autocomplete="username"
-        :disabled="loading"
-      />
-      <input
-        type="password"
-        v-model="password"
-        placeholder="Mot de passe"
-        required
-        autocomplete="current-password"
-        :disabled="loading"
-      />
-      <button type="submit" :disabled="loading">
-        <span v-if="loading" class="loader"></span>
-        <span v-else>Se connecter</span>
-      </button>
-      <p v-if="error" class="error-message">{{ error }}</p>
-    </form>
+      <!-- Formulaire -->
+      <form @submit.prevent="login" class="space-y-4" :class="{ 'opacity-50 pointer-events-none': loading }">
+        <input
+          v-model="username"
+          placeholder="Nom d'utilisateur"
+          required
+          autocomplete="username"
+          class="w-full px-4 py-2 rounded-lg border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-gray-800"
+        />
+
+        <!-- Champ mot de passe avec œil -->
+        <div class="relative">
+          <input
+            :type="showPassword ? 'text' : 'password'"
+            v-model="password"
+            placeholder="Mot de passe"
+            required
+            autocomplete="current-password"
+            class="w-full px-4 py-2 rounded-lg border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-gray-800 pr-10"
+          />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute inset-y-0 right-2 flex items-center text-gray-600 hover:text-gray-900"
+          >
+            <span v-if="showPassword">👁️</span>
+            <span v-else>🙈</span>
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          class="w-full bg-gradient-to-r from-orange-400 to-orange-600 text-white font-bold py-2 rounded-lg shadow-md hover:shadow-lg transition transform hover:-translate-y-1"
+          :disabled="loading"
+        >
+          <span v-if="loading" class="loader mx-auto"></span>
+          <span v-else>Se connecter</span>
+        </button>
+      </form>
+
+      <p v-if="error" class="text-red-600 font-semibold mt-4 text-center">{{ error }}</p>
+    </div>
   </div>
 </template>
 
@@ -38,6 +60,7 @@ export default {
     return {
       username: '',
       password: '',
+      showPassword: false, // <-- pour l’œil
       error: null,
       loading: false,
     }
@@ -76,114 +99,3 @@ export default {
   },
 }
 </script>
-
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&family=Roboto:wght@400;700&display=swap');
-
-.login-container {
-  max-width: 400px;
-  margin: 50px auto;
-  padding: 30px 25px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-  border-radius: 15px;
-  background: linear-gradient(135deg, #d2691e, #8b4513);
-  font-family: 'Roboto', sans-serif;
-  color: #fff;
-  position: relative;
-  overflow: hidden;
-}
-
-.login-logo {
-  text-align: center;
-  margin-bottom: 25px;
-  animation: fadeInDown 1s ease;
-}
-
-.login-logo img {
-  width: 70px;
-  margin-bottom: 10px;
-}
-
-.login-logo h1 {
-  font-family: 'Pacifico', cursive;
-  font-size: 1.8rem;
-  color: #fff8f0;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  animation: fadeIn 1.2s ease;
-}
-
-input {
-  padding: 12px 15px;
-  margin-bottom: 15px;
-  font-size: 16px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  transition: all 0.3s ease;
-  background-color: #fff3e0;
-  color: #4b2e2b;
-}
-
-input:focus {
-  box-shadow: 0 0 8px #8b4513;
-}
-
-button {
-  padding: 12px;
-  background: linear-gradient(145deg, #fff3e0, #d2691e);
-  color: #4b2e2b;
-  font-weight: bold;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-button:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-}
-
-button:disabled {
-  background: #a0522d;
-  cursor: not-allowed;
-}
-
-.loader {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #4b2e2b;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-}
-
-.error-message {
-  color: #ffcccb;
-  margin-top: 10px;
-  text-align: center;
-  font-weight: bold;
-}
-
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>

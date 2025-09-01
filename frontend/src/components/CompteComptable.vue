@@ -1,163 +1,220 @@
 <template>
-  <div class="container">
-    <h2>Comptes comptables</h2>
-    <button @click="openModal()" class="btn-add">Ajouter un compte</button>
+  <div class="min-h-screen bg-[#fdf6f0] p-6 font-sans">
+    <div class="max-w-7xl mx-auto">
+      <!-- Titre -->
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-[#5a2d0c] text-center mb-8">
+        🍫 Comptes comptables
+      </h2>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Code</th>
-          <th>Intitulé</th>
-          <th>Type</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="compte in comptes" :key="compte.id">
-          <td>{{ compte.code }}</td>
-          <td>{{ compte.name }}</td>
-          <td>{{ compte.account_type }}</td>
-          <td>
-            <button @click="openModal(compte)">Modifier</button>
-            <button @click="openEcritures(compte)">Voir écritures</button>
-             <button @click="deleteCompte(compte.id)" class="delete-btn">Supprimer</button>
-          </td>
-        </tr>
-        <tr v-if="comptes.length === 0">
-          <td colspan="4">Aucun compte disponible</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Modal compte -->
-    <div v-if="modalVisible" class="modal">
-      <div class="modal-content">
-        <h3>{{ form.id ? 'Modifier le compte' : 'Ajouter un compte' }}</h3>
-        <form @submit.prevent="saveCompte">
-  <input v-if="form.id" v-model="form.code" placeholder="Code" readonly />
-  <input v-model="form.name" placeholder="Intitulé" required />
-
-  <!-- Type de compte -->
-  <label for="account_type">Type de compte :</label>
-<select v-model="form.account_type" id="account_type">
-  <option value="" disabled hidden>Choisir un type de compte</option>
-  <option v-for="(label, key) in accountTypes" :key="key" :value="key">{{ label }}</option>
-</select>
-
-  <!-- Devise -->
-  <label>Devise a utiliser</label>
-  <select v-model="form.currency">
-
-  <option value="" disabled>Choisir une devise</option>
-  <option v-for="c in currencies" :key="c.id" :value="c.id">{{ c.name }}</option>
-</select>
-<!-- Partie formulaire (dans la modal) -->
-<!-- Classe -->
-<label for="classe">Classe :</label>
-<select v-model="form.classe" id="classe" @change="onClasseChange">
-  <option value="" disabled>Choisir une classe</option>
-  <option v-for="c in planComptable.classes" :key="c.classe_number" :value="c.classe_number">
-    {{ c.classe_number }} - {{ c.name }}
-  </option>
-</select>
-
-<!-- Sous-classe -->
-<label for="sous_classe">Sous-classe :</label>
-<select v-model="form.sous_classe" id="sous_classe" @change="onSousClasseChange">
-  <option value="" disabled>Choisir une sous-classe</option>
-  <option v-for="sc in sousClassesDisponibles" :key="sc.number" :value="sc.number">
-    {{ sc.number }} - {{ sc.name }}
-  </option>
-</select>
-
-<!-- Compte -->
-<label for="compte">Compte :</label>
-<select v-model="form.compte" id="compte" @change="onCompteChange">
-  <option value="" disabled>Choisir un compte</option>
-  <option v-for="c in comptesDisponibles" :key="c.number" :value="c.number">
-    {{ c.number }} - {{ c.name }}
-  </option>
-</select>
-
-<!-- Sous-compte -->
-<label for="sous_compte">Sous-compte :</label>
-<select v-model="form.sous_compte" id="sous_compte" @change="onSousCompteChange">
-  <option value="" disabled>Choisir un sous-compte</option>
-  <option v-for="sc in sousComptesDisponibles" :key="sc.number" :value="sc.number">
-    {{ sc.number }} - {{ sc.name }}
-  </option>
-</select>
-
-
-  <!-- Rapprochement -->
-  <label>
-  Rapprochable:
-    <input type="checkbox" v-model="form.reconcile" />
-  </label>
-<br>
-<!-- Taxes -->
-<label for="tax">Taxe :</label>
-<select v-model="form.taxes" id="tax" multiple>
-  <option v-for="t in taxes" :key="t.id" :value="t.id">{{ t.name }}</option>
-</select>
-
-<!-- Tags -->
-<label for="tag">Tag :</label>
-<select v-model="form.tags" id="tag" multiple>
-  <option v-for="tag in tags" :key="tag.id" :value="tag.id">{{ tag.name }}</option>
-</select>
-
-
-<!-- Partenaire -->
-<div v-if="requiresPartner(form.account_type)">
-  <label for="partner">Partenaire :</label>
-  <select v-model="form.partner" id="partner">
-    <option value="" disabled  hidden>Choisir un partenaire</option>
-    <option v-for="p in partners" :key="p.id" :value="p.id">{{ p.name }}</option>
-  </select>
-</div>
-
-
-  <!-- Note -->
-  <textarea v-model="form.note" placeholder="Note (facultatif)"></textarea>
-
-  <button type="submit">{{ form.id ? 'Modifier' : 'Ajouter' }}</button>
-  <button type="button" @click="closeModal">Annuler</button>
-</form>
-
+      <!-- Bouton ajouter -->
+      <div class="flex justify-end mb-4">
+        <button @click="openModal()"
+          class="bg-gradient-to-r from-[#a0522d] to-[#d2691e] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-transform">
+          Ajouter un compte
+        </button>
       </div>
-    </div>
 
-    <!-- Modal écritures -->
-    <div v-if="ecritureModalVisible" class="modal">
-      <div class="modal-content">
-        <h3>Écritures du compte {{ compteSelectionne.code }}</h3>
-        <table>
-          <thead>
+      <!-- Tableau -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
+          <thead class="bg-[#8b4513] text-white">
             <tr>
-              <th>Date</th>
-              <th>Libellé</th>
-              <th>Débit</th>
-              <th>Crédit</th>
+              <th class="py-3 px-6 text-left">Code</th>
+              <th class="py-3 px-6 text-left">Intitulé</th>
+              <th class="py-3 px-6 text-left">Type</th>
+              <th class="py-3 px-6 text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="e in ecritures" :key="e.id">
-              <td>{{ new Date(e.date).toLocaleString() }}</td>
-              <td>{{ e.libelle }}</td>
-              <td>{{ e.debit }}</td>
-              <td>{{ e.credit }}</td>
+            <tr v-for="compte in comptes" :key="compte.id" class="hover:bg-[#fce8d8] transition-colors">
+              <td class="py-3 px-6">{{ compte.code }}</td>
+              <td class="py-3 px-6">{{ compte.name }}</td>
+              <td class="py-3 px-6">{{ compte.account_type }}</td>
+              <td class="py-3 px-6 flex gap-2 flex-wrap">
+                <button @click="openModal(compte)" class="bg-[#8b4513] text-white px-3 py-1 rounded hover:bg-[#a0522d] transition-colors">Modifier</button>
+                <button @click="openEcritures(compte)" class="bg-[#d2a679] text-[#3c1e0b] px-3 py-1 rounded hover:bg-[#e0b58a] transition-colors">Écritures</button>
+                <button @click="deleteCompte(compte.id)" class="bg-[#c04000] text-white px-3 py-1 rounded hover:bg-[#a83200] transition-colors">Supprimer</button>
+              </td>
             </tr>
-            <tr v-if="ecritures.length === 0">
-              <td colspan="4">Aucune écriture</td>
+            <tr v-if="comptes.length === 0">
+              <td colspan="4" class="py-4 text-center text-gray-500">Aucun compte disponible</td>
             </tr>
           </tbody>
         </table>
-        <button @click="ecritureModalVisible=false">Fermer</button>
+      </div>
+
+      <!-- Modal compte -->
+      <transition name="fade">
+        <div v-if="modalVisible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-[#fff3e6] rounded-2xl w-full max-w-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 class="text-2xl font-bold text-[#5a2d0c] text-center mb-4">
+              {{ form.id ? 'Modifier le compte' : 'Ajouter un compte' }}
+            </h3>
+
+            <form @submit.prevent="saveCompte" class="space-y-4">
+              <input v-if="form.id" v-model="form.code" placeholder="Code" readonly
+                class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]" />
+
+              <input v-model="form.name" placeholder="Intitulé" required
+                class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]" />
+
+              <!-- Type -->
+              <label class="block font-semibold text-[#5a2d0c]">Type de compte :</label>
+              <select v-model="form.account_type" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                <option value="" disabled hidden>Choisir un type de compte</option>
+                <option v-for="(label, key) in accountTypes" :key="key" :value="key">{{ label }}</option>
+              </select>
+
+              <!-- Devise -->
+              <label class="block font-semibold text-[#5a2d0c]">Devise :</label>
+              <select v-model="form.currency" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                <option value="" disabled>Choisir une devise</option>
+                <option v-for="c in currencies" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+
+              <!-- Classe / sous-classe / compte / sous-compte -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Classe :</label>
+                  <select v-model="form.classe" @change="onClasseChange"
+                    class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option value="" disabled>Choisir une classe</option>
+                    <option v-for="c in planComptable.classes" :key="c.classe_number" :value="c.classe_number">
+                      {{ c.classe_number }} - {{ c.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Sous-classe :</label>
+                  <select v-model="form.sous_classe" @change="onSousClasseChange"
+                    class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option value="" disabled>Choisir une sous-classe</option>
+                    <option v-for="sc in sousClassesDisponibles" :key="sc.number" :value="sc.number">
+                      {{ sc.number }} - {{ sc.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Compte :</label>
+                  <select v-model="form.compte" @change="onCompteChange"
+                    class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option value="" disabled>Choisir un compte</option>
+                    <option v-for="c in comptesDisponibles" :key="c.number" :value="c.number">
+                      {{ c.number }} - {{ c.name }}
+                    </option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Sous-compte :</label>
+                  <select v-model="form.sous_compte" @change="onSousCompteChange"
+                    class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option value="" disabled>Choisir un sous-compte</option>
+                    <option v-for="sc in sousComptesDisponibles" :key="sc.number" :value="sc.number">
+                      {{ sc.number }} - {{ sc.name }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+
+
+
+              <!-- Rapprochement -->
+              <label class="inline-flex items-center gap-2">
+                <input type="checkbox" v-model="form.reconcile" class="rounded border-gray-300" />
+                Rapprochement
+              </label>
+
+              <!-- Taxes / Tags -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Taxes :</label>
+                  <select v-model="form.taxes" multiple class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option v-for="t in taxes" :key="t.id" :value="t.id">{{ t.name }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-semibold text-[#5a2d0c]">Tags :</label>
+                  <select v-model="form.tags" multiple class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                    <option v-for="tag in tags" :key="tag.id" :value="tag.id">{{ tag.name }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Partenaire -->
+              <div v-if="requiresPartner(form.account_type)">
+                <label class="block font-semibold text-[#5a2d0c]">Partenaire :</label>
+                <select v-model="form.partner" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
+                  <option value="" disabled hidden>Choisir un partenaire</option>
+                  <option v-for="p in partners" :key="p.id" :value="p.id">{{ p.name }}</option>
+                </select>
+              </div>
+
+              <!-- Note -->
+              <textarea v-model="form.note" placeholder="Note (facultatif)"
+                class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]"></textarea>
+
+              <!-- Boutons -->
+              <div class="flex justify-end gap-3">
+                <button type="submit" class="bg-[#a0522d] text-white font-bold px-6 py-2 rounded-xl hover:bg-[#d2691e] transition-colors">
+                  {{ form.id ? 'Modifier' : 'Ajouter' }}
+                </button>
+                <button type="button" @click="closeModal" class="bg-gray-400 text-white font-bold px-6 py-2 rounded-xl hover:bg-gray-500 transition-colors">
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </transition>
+      <!-- Modal Écritures -->
+<transition name="fade">
+  <div v-if="ecritureModalVisible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl w-full max-w-4xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-2xl font-bold text-[#5a2d0c]">
+          Écritures — {{ compteSelectionne.code }} · {{ compteSelectionne.name }}
+        </h3>
+        <button @click="ecritureModalVisible=false"
+                class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition">
+          Fermer
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-[#fff8f0] rounded-xl overflow-hidden">
+          <thead class="bg-[#8b4513] text-white">
+            <tr>
+              <th class="py-2 px-4 text-left">Date</th>
+              <th class="py-2 px-4 text-left">Journal</th>
+              <th class="py-2 px-4 text-left">Réf.</th>
+              <th class="py-2 px-4 text-left">Libellé</th>
+              <th class="py-2 px-4 text-right">Débit</th>
+              <th class="py-2 px-4 text-right">Crédit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="e in ecritures" :key="e.id" class="hover:bg-[#fce8d8]">
+              <td class="py-2 px-4">{{ formatDate(e.date) }}</td>
+              <td class="py-2 px-4">{{ e.journal || '-' }}</td>
+              <td class="py-2 px-4">{{ e.reference || '-' }}</td>
+              <td class="py-2 px-4">{{ e.label }}</td>
+              <td class="py-2 px-4 text-right">{{ formatAmount(e.debit) }}</td>
+              <td class="py-2 px-4 text-right">{{ formatAmount(e.credit) }}</td>
+            </tr>
+            <tr v-if="ecritures.length === 0">
+              <td colspan="6" class="py-3 px-4 text-center text-gray-500">Aucune écriture</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
+</transition>
+    </div>
+  </div>
 </template>
+
 <script>
 import api from '../axios.js';
 import plan_comptable_general_2005 from '../../compte.json';
@@ -210,6 +267,18 @@ form: {
       // Les types qui nécessitent un partenaire
       return ["asset_receivable", "liability_payable"].includes(type);
     },
+    formatDate(date) {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("fr-FR", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit"
+    });
+    },
+    formatAmount(value) {
+    if (value == null) return "-";
+    return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(value);
+  },
     onClasseChange() {
       const classe = this.planComptable.classes.find(c => c.classe_number === this.form.classe);
       this.sousClassesDisponibles = classe ? classe.accounts : [];
@@ -321,24 +390,29 @@ async deleteCompte(id) {
     },
     async saveCompte() {
   try {
-  console.log("Code:", this.form.code, "Name:", this.form.name, "Type:", this.form.account_type);
+    console.log("Code:", this.form.code, "Name:", this.form.name, "Type:", this.form.account_type);
 
     // Vérifie que les champs obligatoires sont remplis
-    if (!this.form.name || !this.form.account_type) {
+    if (!this.form.code || !this.form.name || !this.form.account_type) {
       alert("Veuillez remplir tous les champs obligatoires !");
       return;
     }
 
-    // Prépare le payload pour DRF
+    // Prépare le payload complet
     const payload = {
+      code: this.form.code,                // <-- ajouté
       name: this.form.name,
       account_type: this.form.account_type,
-      currency: this.form.currency || null,   // déjà un ID
+      currency: this.form.currency || null,
       reconcile: this.form.reconcile,
       note: this.form.note,
-      taxes: Array.isArray(this.form.taxes) ? this.form.taxes : [], // tableau d'IDs
-      tags: Array.isArray(this.form.tags) ? this.form.tags : [],    // tableau d'IDs
-      partner: this.form.partner || null     // déjà un ID
+      taxes: Array.isArray(this.form.taxes) ? this.form.taxes : [],
+      tags: Array.isArray(this.form.tags) ? this.form.tags : [],
+      partner: this.form.partner || null,
+      classe: this.form.classe || null,        // <-- ajouté
+      sous_classe: this.form.sous_classe || null, // <-- ajouté
+      compte: this.form.compte || null,        // <-- ajouté
+      sous_compte: this.form.sous_compte || null // <-- ajouté
     };
 
     // POST ou PUT selon si l'objet existe
@@ -353,21 +427,24 @@ async deleteCompte(id) {
     this.closeModal();
 
   } catch (e) {
-    // Affiche l'erreur détaillée du serveur
     console.error("Erreur saveCompte:", e.response?.data || e);
     alert("Erreur lors de l'enregistrement : " + JSON.stringify(e.response?.data));
   }
 },
 
 
+
     async openEcritures(compte) {
-      this.compteSelectionne = compte;
-      try {
-        const res = await api.get(`/api/comptes/${compte.id}/ecritures/`);
-        this.ecritures = res.data;
-        this.ecritureModalVisible = true;
-      } catch(e){ console.error(e); }
-    }
+  this.compteSelectionne = compte;
+  try {
+    const res = await api.get(`/api/comptes/${compte.id}/ecritures/`);
+    this.ecritures = res.data;
+    this.ecritureModalVisible = true;
+  } catch(e) {
+    console.error("Erreur lors du chargement des écritures:", e);
+    alert("Erreur lors du chargement des écritures : " + (e.response?.data?.message || e.message));
+  }
+}
   },
   mounted() {
     this.fetchComptes();
@@ -375,183 +452,7 @@ async deleteCompte(id) {
   }
 }
 </script>
-
 <style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #fdf6f0; /* fond crème clair */
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-h2 {
-  color: #5a2d0c; /* marron chocolat */
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.btn-add {
-  background: linear-gradient(45deg,#a0522d,#d2691e); /* chocolat caramel */
-  color: #fff;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-.btn-add:hover {
-  background: linear-gradient(45deg,#d2691e,#a0522d);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: #fff8f0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-}
-
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #e6d5c2;
-}
-
-th {
-  background: #d2691e; /* couleur chocolat */
-  color: #fff;
-  font-weight: bold;
-}
-
-tr:hover {
-  background: #fce8d8;
-}
-
-td.actions button {
-  margin: 2px;
-  padding: 6px 10px;
-  font-size: 13px;
-  border-radius: 6px;
-  color: #fff;
-}
-
-td.actions button:hover {
-  opacity: 0.9;
-}
-
-button.edit-btn { background: #8b4513; } /* brun foncé */
-button.delete-btn { background: #c04000; } /* rouge chocolat */
-button.info-btn { background: #d2a679; color: #3c1e0b; } /* caramel clair */
-button.success-btn { background: #a0522d; } /* chocolat */
-button.cancel-btn { background: #8c7b6b; } /* gris chocolat */
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(90,45,12,0.7); /* overlay marron translucide */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: #fff3e6; /* crème clair */
-  padding: 25px;
-  border-radius: 12px;
-  width: 600px;
-  max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-  position: relative;
-}
-
-.modal-content h3 {
-  margin-top: 0;
-  color: #5a2d0c;
-  text-align: center;
-}
-
-.modal-content input,
-.modal-content select {
-  width: 100%;
-  padding: 8px;
-  margin: 10px 0;
-  border-radius: 6px;
-  border: 1px solid #d4b89c;
-  background: #fff8f0;
-}
-
-.modal-content input:focus,
-.modal-content select:focus {
-  outline: none;
-  border-color: #a0522d;
-  box-shadow: 0 0 5px #d2691e;
-}
-
-.modal-content button {
-  margin-top: 10px;
-  padding: 8px 15px;
-  border-radius: 6px;
-  border: none;
-  color: #fff;
-  background: #a0522d;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.modal-content button:hover {
-  background: #d2691e;
-}
-
-.modal-content button[type="button"] {
-  background: #8c7b6b;
-  margin-left: 10px;
-}
-
-.modal-content table {
-  width: 100%;
-  margin-top: 15px;
-  border-collapse: collapse;
-}
-
-.modal-content table th,
-.modal-content table td {
-  padding: 10px;
-  text-align: left;
-  border-bottom: 1px solid #e6d5c2;
-}
-
-.modal-content table th {
-  background: #d2691e;
-  color: #fff;
-}
-
-.modal-content table tr:hover {
-  background: #fce8d8;
-}
-button.delete-btn {
-  background: #c04000; /* rouge chocolat */
-  color: #fff;
-}
-button.delete-btn:hover {
-  background: #a83200;
-}
+.fade-enter-active, .fade-leave-active { transition: opacity .2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

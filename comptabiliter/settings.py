@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'comptabiliter',
     'dal',
     'dal_select2',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

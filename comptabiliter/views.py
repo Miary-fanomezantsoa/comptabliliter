@@ -83,10 +83,11 @@ class AccountViewSet(viewsets.ModelViewSet):
 
 class CompteComptableViewSet(viewsets.ModelViewSet):
     queryset = Account.objects.all().order_by('code')
-    serializer_class = CompteComptableSerializer
+    serializer_class = AccountSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ['code', 'name',]
+    search_fields = ['code', 'name']
     permission_classes = [IsAuthenticated]
+
     def perform_create(self, serializer):
         compte = serializer.save()
         HistoriqueModification.objects.create(
@@ -98,7 +99,7 @@ class CompteComptableViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         instance = self.get_object()
-        ancienne = CompteComptableSerializer(instance).data
+        ancienne = AccountSerializer(instance).data
         compte = serializer.save()
         HistoriqueModification.objects.create(
             compte=compte,
@@ -113,7 +114,7 @@ class CompteComptableViewSet(viewsets.ModelViewSet):
             compte=instance,
             utilisateur=self.request.user if self.request.user.is_authenticated else None,
             action="suppression",
-            ancienne_valeur=json.dumps(CompteComptableSerializer(instance).data)
+            ancienne_valeur=json.dumps(AccountSerializer(instance).data)
         )
         instance.delete()
 
@@ -127,10 +128,10 @@ class CompteComptableViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'])
     def ecritures(self, request, pk=None):
         compte = self.get_object()
-        # Utiliser JournalItem qui est lié au compte
         ecritures = JournalItem.objects.filter(account=compte)
         serializer = JournalItemSerializer(ecritures, many=True)
         return Response(serializer.data)
+
 
 
 class PartnerViewSet(viewsets.ModelViewSet):
@@ -267,7 +268,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         payment = serializer.save()
         partner = payment.pattern  # le client associé
 
-        # Vérifier que le compte du client existe
+        # Vérifie que le compte du client existe
         account_partner = Account.objects.filter(partner=partner, account_type='asset_receivable').first()
         if not account_partner:
             raise serializers.ValidationError(
@@ -338,7 +339,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             # Pour COD, pas de journal, juste crédit client
             pass
 
-
+#filtre les partenaire en fonction de type de compte
 class PartnerAutocomplete(autocomplete.Select2QuerySetView):
     def get_queryset(self):
         qs = Partner.objects.all()
@@ -352,6 +353,7 @@ class PartnerAutocomplete(autocomplete.Select2QuerySetView):
             qs = Partner.objects.none()
         return qs
 
+#grand livre
 class GeneralLedgerView(APIView):
     def get(self, request):
         # Filtrer par période si fournie
@@ -383,8 +385,7 @@ class GeneralLedgerView(APIView):
 
         return Response(ledger)
 
- # Assurez-vous que le modèle Account est importé
-
+#balance comptable
 class TrialBalanceByTypeView(APIView):
     def get(self, request):
         start_date = request.query_params.get("start_date")

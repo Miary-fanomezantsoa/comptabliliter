@@ -1,61 +1,72 @@
 <template>
-  <div class="journal-container">
-    <h2>Choisissez le type de journal</h2>
-    <select v-model="selectedJournal" @change="selectJournal(selectedJournal)">
+  <div class="max-w-4xl mx-auto p-6 bg-orange-50 rounded-xl shadow-md font-sans">
+    <!-- Header -->
+    <h2 class="text-2xl font-bold text-orange-900 mb-4">Choisissez le type de journal</h2>
+    <select v-model="selectedJournal" @change="selectJournal(selectedJournal)"
+            class="p-2 mb-6 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600">
       <option v-for="j in journals" :key="j.id" :value="j">{{ j.name }}</option>
     </select>
 
-    <h2>Écritures du journal</h2>
+    <h2 class="text-2xl font-bold text-orange-900 mb-4">Écritures du journal</h2>
     <ul>
       <li
         v-for="e in journalEntries"
         :key="e.id"
         @click="selectEntry(e)"
-        :class="{ selected: selectedEntry && selectedEntry.id === e.id }"
-      >
-        {{ e.reference || 'Sans référence' }} - {{ e.date }}
-        |Partenaire :
-    <span>
-
-      {{ e.items[0].account.name || 'Aucun' }}
-    </span>
+        :class="['p-3 mb-2 rounded cursor-pointer transition-colors',
+                selectedEntry && selectedEntry.id === e.id ? 'bg-orange-600 text-white font-bold' : 'bg-orange-100 hover:bg-orange-200']">
+        {{ e.reference || 'Sans référence' }} - {{ e.date }} | Partenaire :
+        <span>{{ e.items[0]?.account?.name || 'Aucun' }}</span>
       </li>
     </ul>
 
-   <h2 v-if="journalItems.length">Lignes de l'écriture</h2>
-    <table v-if="journalItems.length">
+    <h2 v-if="journalItems.length" class="text-2xl font-bold text-orange-900 mt-6 mb-4">Lignes de l'écriture</h2>
+    <div v-if="journalItems.length" class="overflow-x-auto">
+      <table class="min-w-full border border-orange-300 rounded-lg overflow-hidden">
+        <thead class="bg-orange-900 text-white">
+          <tr>
+            <th class="p-2 text-left">Compte</th>
+            <th class="p-2 text-right">Débit</th>
+            <th class="p-2 text-right">Crédit</th>
+            <th class="p-2 text-left">Libellé</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in journalItems" :key="item.id" class="even:bg-orange-100 hover:bg-orange-600 hover:text-white transition-colors">
+            <td class="p-2">{{ item.account.name }}</td>
+            <td class="p-2 text-right">{{ item.debit }}</td>
+            <td class="p-2 text-right">{{ item.credit }}</td>
+            <td class="p-2">{{ item.label }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-      <thead>
-        <tr>
-          <th>Compte</th>
-          <th>Débit</th>
-          <th>Crédit</th>
-          <th>Libellé</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in journalItems" :key="item.id">
-          <td>{{ item.account.name }}</td>
-          <td>{{ item.debit }}</td>
-          <td>{{ item.credit }}</td>
-          <td>{{ item.label }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Formulaire ajout -->
+    <div v-if="selectedEntry" class="mt-6 p-4 bg-orange-100 rounded-lg shadow-inner">
+      <h3 class="text-xl font-semibold text-orange-900 mb-3">Ajouter une ligne d'écriture</h3>
+      <h5 class="text-orange-800 mb-2">Sélection du partenaire :</h5>
 
-
-    <div v-if="selectedEntry" class="add-item-form">
-    <h3>Ajouter une ligne d'ecriture</h3>
-    <h5>Séléction du partenaire:</h5>
-      <select v-model="newItem.account_id">
-      <option disabled value="">Sélectionnez un compte</option>
+      <select v-model="newItem.account_id"
+              class="p-2 mb-3 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600 w-full">
+        <option disabled value="">Sélectionnez un compte</option>
         <option v-for="c in accounts" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
 
-      <input type="number" v-model.number="newItem.debit" placeholder="Débit" />
-      <input type="number" v-model.number="newItem.credit" placeholder="Crédit" />
-      <input type="text" v-model="newItem.label" placeholder="Libellé" />
-      <button @click="addItem">Ajouter</button>
+      <div class="flex flex-col sm:flex-row gap-3 mb-3">
+        <input type="number" v-model.number="newItem.debit" placeholder="Débit"
+               class="p-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600 flex-1"/>
+        <input type="number" v-model.number="newItem.credit" placeholder="Crédit"
+               class="p-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600 flex-1"/>
+      </div>
+
+      <input type="text" v-model="newItem.label" placeholder="Libellé"
+             class="p-2 mb-3 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600 w-full"/>
+
+      <button @click="addItem"
+              class="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition-colors">
+        Ajouter
+      </button>
     </div>
   </div>
 </template>
@@ -72,12 +83,7 @@ export default {
       selectedEntry: null,
       journalItems: [],
       accounts: [],
-      newItem: {
-        account_id: null,
-        debit: null,
-        credit: null,
-        label: ''
-      },
+      newItem: { account_id: null, debit: null, credit: null, label: '' },
       loading: false
     };
   },
@@ -88,52 +94,32 @@ export default {
   methods: {
     async fetchJournals() {
       this.loading = true;
-      try {
-        const res = await api.get('/api/journals/');
-        this.journals = res.data;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.loading = false;
-      }
+      try { this.journals = (await api.get('/api/journals/')).data; }
+      catch (err) { console.error(err); }
+      finally { this.loading = false; }
     },
     async fetchAccounts() {
-      try {
-        const res = await api.get('/api/comptes/');
-        this.accounts = res.data;
-      } catch (err) {
-        console.error(err);
-      }
+      try { this.accounts = (await api.get('/api/comptes/')).data; }
+      catch (err) { console.error(err); }
     },
     async selectJournal(journal) {
       this.selectedJournal = journal;
       this.selectedEntry = null;
       this.journalItems = [];
       this.loading = true;
-      try {
-        const res = await api.get('/api/journal-entries/', { params: { journal: journal.id } });
-        this.journalEntries = res.data;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.loading = false;
-      }
+      try { this.journalEntries = (await api.get('/api/journal-entries/', { params: { journal: journal.id } })).data; }
+      catch (err) { console.error(err); }
+      finally { this.loading = false; }
     },
     async selectEntry(entry) {
       this.selectedEntry = entry;
       this.loading = true;
-      try {
-        const res = await api.get(`/api/journal-entries/${entry.id}/ecritures/`);
-        this.journalItems = res.data;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        this.loading = false;
-      }
+      try { this.journalItems = (await api.get(`/api/journal-entries/${entry.id}/ecritures/`)).data; }
+      catch (err) { console.error(err); }
+      finally { this.loading = false; }
     },
     async addItem() {
       if (!this.selectedEntry || !this.newItem.account_id) return;
-
       try {
         const res = await api.post('/api/journal-items/', {
           entry_id: this.selectedEntry.id,
@@ -143,123 +129,9 @@ export default {
           label: this.newItem.label
         });
         this.journalItems.push(res.data);
-        // reset
         this.newItem = { account_id: null, debit: 0, credit: 0, label: '' };
-      } catch (err) {
-        console.error(err.response.data);
-      }
+      } catch (err) { console.error(err.response?.data); }
     }
   }
 };
 </script>
-
-<style>
-/* Variables chocolat globales */
-:root {
-  --choco-dark: #4b2e2e;
-  --choco-medium: #7b4f4f;
-  --choco-light: #d9b99b;
-  --choco-hover: #8c5c5c;
-  --choco-bg: #f5ece3;
-  --choco-white: #fff8f0;
-}
-
-.journal-container {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--choco-bg);
-  padding: 25px;
-  border-radius: 12px;
-  max-width: 900px;
-  margin: 20px auto;
-}
-
-h2, h3 {
-  color: var(--choco-dark);
-  margin-bottom: 12px;
-  font-weight: 600;
-}
-
-select, input, button {
-  padding: 8px 12px;
-  margin: 5px 5px 10px 0;
-  border-radius: 6px;
-  border: 1px solid var(--choco-medium);
-  font-size: 14px;
-}
-
-select:focus, input:focus {
-  outline: none;
-  border-color: var(--choco-dark);
-  box-shadow: 0 0 5px rgba(75, 46, 46, 0.5);
-}
-
-button {
-  background-color: var(--choco-medium);
-  color: var(--choco-white);
-  cursor: pointer;
-  transition: 0.3s;
-  border: none;
-}
-
-button:hover {
-  background-color: var(--choco-hover);
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-li {
-  padding: 10px 14px;
-  margin-bottom: 6px;
-  border-radius: 6px;
-  cursor: pointer;
-  background-color: var(--choco-white);
-  transition: 0.3s;
-}
-
-li:hover {
-  background-color: var(--choco-light);
-}
-
-.selected {
-  font-weight: bold;
-  background-color: var(--choco-medium);
-  color: var(--choco-white);
-}
-
-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: 15px;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 3px 10px rgba(75, 46, 46, 0.3);
-}
-
-thead {
-  background-color: var(--choco-dark);
-  color: var(--choco-white);
-}
-
-th, td {
-  padding: 10px 12px;
-  text-align: left;
-}
-
-tbody tr:nth-child(even) {
-  background-color: var(--choco-light);
-}
-
-tbody tr:hover {
-  background-color: var(--choco-medium);
-  color: var(--choco-white);
-}
-
-.add-item-form {
-  margin-top: 15px;
-}
-</style>

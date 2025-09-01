@@ -52,20 +52,29 @@ class AccountTagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AccountSerializer(serializers.ModelSerializer):
-    code = serializers.CharField(required=False)  # <-- ici c'est facultatif
     class Meta:
         model = Account
-        fields = ['id', 'code', 'name', 'account_type', 'currency',
-                  'reconcile', 'note', 'taxes', 'tags', 'partner']
+        fields = [
+            'id', 'code', 'name', 'account_type', 'currency',
+            'reconcile', 'note', 'taxes', 'tags', 'partner',
+            'classe', 'sous_classe', 'compte', 'sous_compte'
+        ]
+        extra_kwargs = {
+            "sous_classe": {"required": False, "allow_null": True},
+            "compte_parent": {"required": False, "allow_null": True},
+            "sous_compte": {"required": False, "allow_null": True},
+        }
 
     def validate(self, data):
-        # Crée une instance temporaire pour appeler clean()
         account = Account(**data)
         try:
-            account.clean()  # Appelle la validation du modèle
+            account.clean()
         except ValidationError as e:
-            raise serializers.ValidationError(e.message_dict if hasattr(e, 'message_dict') else str(e))
+            raise serializers.ValidationError(
+                e.message_dict if hasattr(e, 'message_dict') else str(e)
+            )
         return data
+
 
 class JournalSerializer(serializers.ModelSerializer):
     class Meta:

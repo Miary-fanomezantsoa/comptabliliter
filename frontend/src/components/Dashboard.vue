@@ -1,26 +1,43 @@
 <template>
-  <div class="dashboard">
+  <div class="flex-1 flex flex-col overflow-hidden p-8 bg-[#f7f1e1] min-h-screen">
+    <!-- Titre -->
+    <h1 class="text-4xl font-extrabold mb-10 text-[#5a3e36]">🍫 Tableau de bord Chocolaterie</h1>
 
-    <!-- Cartes d'information -->
-    <section class="stats">
-      <div class="card" v-for="item in statsList" :key="item.title" :class="item.color">
-        <h2>{{ item.icon }} {{ item.title }}</h2>
-        <p>{{ item.value }} {{ item.label }}</p>
-        <button @click="item.action()">Voir</button>
+    <!-- Cartes de stats -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div
+        v-for="stat in stats"
+        :key="stat.title"
+        :class="[
+          'p-6 rounded-3xl shadow-md transform transition duration-300 hover:scale-105 hover:shadow-2xl',
+          stat.color
+        ]"
+      >
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-semibold flex items-center gap-3 text-white">
+            <span class="text-2xl">{{ stat.icon }}</span> {{ stat.title }}
+          </h2>
+          <span class="text-3xl font-bold text-white">{{ stat.value }}</span>
+        </div>
+        <p class="text-white/90 text-sm">{{ stat.label }}</p>
       </div>
     </section>
 
     <!-- Actions rapides -->
-    <section class="quick-actions">
-      <h2>⚡ Actions rapides</h2>
-      <div class="actions-grid">
-        <button @click="goToComptes">📂 Gestion des comptes</button>
-        <button @click="goToJournaux">🧾 Gestion des journaux</button>
-        <button @click="goToReports">📊 Rapports</button>
-        <button @click="goToPartners">🤝 Créer un partenaire</button>
+    <section>
+      <h2 class="text-2xl font-bold text-[#5a3e36] mb-5">⚡ Actions rapides</h2>
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <button
+          v-for="action in actions"
+          :key="action.label"
+          @click="action.handler"
+          class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#8b4513] to-[#a0522d] text-white py-4 px-6 rounded-2xl shadow-md hover:scale-105 hover:shadow-xl transition-transform duration-300 font-medium text-sm"
+        >
+          <span class="text-lg">{{ action.icon }}</span>
+          {{ action.label }}
+        </button>
       </div>
     </section>
-
   </div>
 </template>
 
@@ -31,139 +48,45 @@ export default {
   name: "Dashboard",
   data() {
     return {
-      user: null,
-      stats: {
-        comptes: 0,
-        journaux: 0
-      },
-      statsList: []
+      stats: [
+        { title: "Partenaires", value: 0, icon: "👥", label: "Nombre total de Partenaires", color: "bg-gradient-to-r from-[#d2b48c] to-[#c19a6b]" }, // Beige → Caramel
+        { title: "Commandes", value: 0, icon: "🛒", label: "Commandes enregistrées", color: "bg-gradient-to-r from-[#8b4513] to-[#a0522d]" }, // Chocolat au lait
+        { title: "Factures", value: 0, icon: "🧾", label: "Factures générées", color: "bg-gradient-to-r from-[#3e2c23] to-[#5a3e36]" }, // Chocolat noir
+        { title: "Paiements", value: 0, icon: "💳", label: "Paiements reçus", color: "bg-gradient-to-r from-[#d2691e] to-[#ffb347]" }, // Caramel / Doré
+      ],
+      actions: [
+        { label: "Créer une facture", icon: "📝", handler: () => this.$router.push("/commande&payment") },
+        { label: "Ajouter un client", icon: "➕", handler: () => this.$router.push("/partners") },
+        { label: "Voir le journal", icon: "📒", handler: () => this.$router.push("/journals") },
+        { label: "Exporter PDF", icon: "📤", handler: () => alert("Exporter PDF") },
+      ],
     };
   },
-  async mounted() {
-    await this.fetchUser();
-    await this.fetchStats();
+  mounted() {
+    this.fetchStats();
   },
   methods: {
-    async fetchUser() {
-      try {
-        const response = await api.get("/api/user/");
-        this.user = response.data;
-      } catch {
-        this.user = null;
-      }
-    },
     async fetchStats() {
       try {
-        const comptesRes = await api.get("/api/comptes/");
-        const journauxRes = await api.get("/api/journals/");
-        this.stats.comptes = comptesRes.data.length;
-        this.stats.journaux = journauxRes.data.length;
+        const [clientsRes, ordersRes, invoicesRes, paymentsRes] = await Promise.all([
+          api.get("/api/partners/"),
+          api.get("/api/orders/"),
+          api.get("/api/invoices/"),
+          api.get("/api/payments/"),
+        ]);
 
-        this.statsList = [
-          { title: "Comptes", value: this.stats.comptes, label: "comptes", icon: "💼", action: this.goToComptes, color: "card-brown" },
-          { title: "Journaux", value: this.stats.journaux, label: "journals", icon: "🧾", action: this.goToJournaux, color: "card-chocolate" }
-        ];
-      } catch {
-        this.stats = { comptes: 0, journaux: 0 };
+        this.stats[0].value = clientsRes.data.length;
+        this.stats[1].value = ordersRes.data.length;
+        this.stats[2].value = invoicesRes.data.length;
+        this.stats[3].value = paymentsRes.data.length;
+      } catch (error) {
+        console.error("Erreur lors de la récupération des stats", error);
       }
     },
-    logout() {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      this.$router.push({ name: "Login" });
-    },
-    goToComptes() {
-      this.$router.push({ name: "Comptes" });
-    },
-    goToJournaux() {
-      this.$router.push({ name: "Journals" });
-    },
-    goToReports() {
-      this.$router.push({ name: "Rapports" });
-    },
-    goToPartners() {
-      this.$router.push({ name: "Partners" });
-    }
-  }
+  },
 };
 </script>
 
 <style scoped>
-.dashboard {
-  padding: 2rem;
-  font-family: 'Roboto', sans-serif;
-  background: #fdf5f0;
-}
-
-/* Stats cards */
-.stats {
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 2rem;
-}
-
-.card {
-  flex: 1;
-  min-width: 220px;
-  border-radius: 12px;
-  padding: 1.2rem;
-  color: #fff;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-}
-
-.card h2 {
-  margin-bottom: 0.5rem;
-}
-
-.card button {
-  background: #fff;
-  color: #4b2e2b;
-  padding: 0.4rem 0.8rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.card button:hover {
-  background: #f3e1d2;
-}
-
-/* Couleurs chocolat */
-.card-brown { background: #8b4513; }
-.card-chocolate { background: #d2691e; }
-
-/* Actions rapides */
-.quick-actions h2 {
-  margin-bottom: 1rem;
-  color: #4b2e2b;
-}
-
-.actions-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-}
-
-.actions-grid button {
-  background: #d2691e;
-  color: white;
-  padding: 0.8rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.actions-grid button:hover {
-  background: #8b4513;
-}
+/* Optionnel : animations plus douces */
 </style>
