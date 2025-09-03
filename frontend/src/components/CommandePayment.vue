@@ -111,8 +111,8 @@
         <h2 class="text-xl font-semibold text-orange-900 text-center">Nouvelle commande</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <select v-model="newOrder.partner_id" class="border border-gray-300 rounded px-2 py-1 w-full">
-            <option value="" disabled>Choisir un partenaire</option>
-            <option v-for="c in partners" :key="c.id" :value="c.id">{{ c.name }}</option>
+            <option value="" disabled>Choisir un clients</option>
+            <option v-for="c in clients" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
 
@@ -169,6 +169,9 @@ export default {
     this.fetchProducts();
   },
   computed: {
+   clients() {
+    return this.partners.filter(p => p.is_client);
+  },
   orderTotal() {
   let sum = 0;
 

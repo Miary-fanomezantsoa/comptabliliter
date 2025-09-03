@@ -1,11 +1,9 @@
 <template>
-  <div class="flex flex-col h-screen">
-    <!-- Header -->
-    <HeaderWithNav />
+  <div class="flex flex-col min-h-screen">
 
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1">
       <!-- Sidebar -->
-      <aside class="bg-white w-64 p-4 flex flex-col gap-2 shadow-md">
+      <aside class="bg-white p-4 flex flex-col gap-2 shadow-md max-h-full">
         <router-link
           v-for="link in navLinks"
           :key="link.to"
@@ -32,16 +30,19 @@
         <router-view />
       </main>
     </div>
+
+
   </div>
 </template>
 
 <script>
 import HeaderWithNav from "@/components/Header.vue";
-import paramIcon from "../../public/paramettre.png"; // mieux de mettre dans assets
+import Footer from "@/components/Footer.vue";
+import paramIcon from "../../public/paramettre.png";
 
 export default {
   name: "LayoutLModern",
-  components: { HeaderWithNav },
+  components: { HeaderWithNav, Footer },
   data() {
     return {
       navLinks: [
@@ -53,7 +54,7 @@ export default {
         { to: "/balance", label: "Balance", icon: "📊", iconIsImg: false },
         { to: "/livre", label: "Livre comptable", icon: "📚", iconIsImg: false },
         { to: "/User", label: "Gérer les utilisateurs", icon: "👤", iconIsImg: false },
-        {to: "/produit", label: "Produits", icon:"🍫 "},
+        { to: "/produit", label: "Produits", icon:"🍫 ", iconIsImg: false },
         { to: "/Paramettre", label: "Paramètres", icon: paramIcon, iconIsImg: true }
       ],
     };
