@@ -22,7 +22,9 @@
               <th class="py-3 px-6 text-left">Code</th>
               <th class="py-3 px-6 text-left">Intitulé</th>
               <th class="py-3 px-6 text-left">Type</th>
+              <th class="py-3 px-6 text-left">Structure</th>
               <th class="py-3 px-6 text-left">Actions</th>
+
             </tr>
           </thead>
           <tbody>
@@ -30,7 +32,14 @@
               <td class="py-3 px-6">{{ compte.code }}</td>
               <td class="py-3 px-6">{{ compte.name }}</td>
               <td class="py-3 px-6">{{ compte.account_type }}</td>
+              <td class="py-3 px-6">
+                    {{ compte.classe || '-' }} ·
+                    {{ compte.sous_classe || '-' }} ·
+                    {{ compte.compte || '-' }} ·
+                    {{ compte.sous_compte || '-' }}
+              </td>
               <td class="py-3 px-6 flex gap-2 flex-wrap">
+
                 <button @click="openModal(compte)" class="bg-[#8b4513] text-white px-3 py-1 rounded hover:bg-[#a0522d] transition-colors">Modifier</button>
                 <button @click="openEcritures(compte)" class="bg-[#d2a679] text-[#3c1e0b] px-3 py-1 rounded hover:bg-[#e0b58a] transition-colors">Écritures</button>
                 <button @click="deleteCompte(compte.id)" class="bg-[#c04000] text-white px-3 py-1 rounded hover:bg-[#a83200] transition-colors">Supprimer</button>
@@ -316,8 +325,24 @@ form: {
       note: compte.note || '',
       taxes: compte.taxes || [],
       tags: compte.tags || [],
-      partner: compte.partner || null
+      partner: compte.partner || null,
+      classe: compte.classe || '',
+      sous_classe: compte.sous_classe || '',
+      compte: compte.compte || '',
+      sous_compte: compte.sous_compte || ''
     };
+    if (this.form.classe) {
+      const classe = this.planComptable.classes.find(c => c.classe_number === this.form.classe);
+      this.sousClassesDisponibles = classe ? classe.accounts : [];
+    }
+    if (this.form.sous_classe) {
+      const sc = this.sousClassesDisponibles.find(s => s.number === this.form.sous_classe);
+      this.comptesDisponibles = sc ? sc.subaccounts : [];
+    }
+    if (this.form.compte) {
+      const c = this.comptesDisponibles.find(c => c.number === this.form.compte);
+      this.sousComptesDisponibles = c ? c.details : [];
+    }
     else this.form = {
       id: null,
       code: '',
@@ -328,9 +353,16 @@ form: {
       note: '',
       taxes: [],
       tags: [],
-      partner: null
+      partner: null,
+      classe: '',
+      sous_classe: '',
+      compte: '',
+      sous_compte: ''
     };
     this.modalVisible = true;
+    this.sousClassesDisponibles = [];
+    this.comptesDisponibles = [];
+    this.sousComptesDisponibles = [];
   },
 
   closeModal() {

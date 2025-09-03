@@ -1,5 +1,7 @@
+from datetime import datetime
+
 from dal import autocomplete
-from django.db.models import Sum
+from django.db.models import Sum, Max
 from rest_framework import viewsets, filters, serializers
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -9,15 +11,17 @@ import json
 from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem, Partner,
-    Company, UserProfile, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment
+    Company, UserProfile, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment, User, Category
 )
 from .serializers import (
     CurrencySerializer, TaxSerializer, AccountTagSerializer, AccountSerializer,
     JournalSerializer, JournalEntrySerializer, JournalItemSerializer, PartnerSerializer,
     CompanySerializer, UserProfileSerializer, UserSerializer, CompteComptableSerializer,
     HistoriqueModificationSerializer, SafeUserSerializer, PaymentSerializer, OrderItemSerializer, OrderSerializer,
-    InvoiceSerializer, ProductSerializer
+    InvoiceSerializer, ProductSerializer, CategorySerializer
 )
+from .utils.accounting import get_or_create_account
+
 
 #devise
 class CurrencyViewSet(viewsets.ModelViewSet):
@@ -54,9 +58,28 @@ class CompanyViewSet(viewsets.ModelViewSet):
 
 
 #utilisateur
-class UserProfileViewSet(viewsets.ModelViewSet):
-    queryset = UserProfile.objects.all()
-    serializer_class = UserProfileSerializer
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.is_superuser:
+            return Response({"detail": "Impossible de supprimer le super utilisateur."}, status=403)
+        return super().destroy(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        user = self.get_object()
+        if user.is_superuser and 'role' in request.data:
+            request.data['role'] = user.role
+        return super().update(request, *args, **kwargs)
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
 class CurrentUserView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -168,6 +191,26 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
 
 # commandes
+# Fonction utilitaire pour déterminer la classe, sous-classe, compte et sous-compte
+def get_account_structure(account_type):
+    """
+    Retourne un dict avec classe, sous_classe, compte et sous_compte
+    selon le type de compte (PCG standard)
+    """
+    if account_type == "asset_receivable":
+        return {"classe":"4", "sous_classe":"10", "compte":"401", "sous_compte":"0001"}  # Client
+    elif account_type == "liability_payable":
+        return {"classe":"4", "sous_classe":"20", "compte":"401", "sous_compte":"0002"}  # Fournisseur
+    elif account_type == "asset_cash":
+        return {"classe":"5", "sous_classe":"10", "compte":"512", "sous_compte":"0000"}  # Banque / caisse
+    elif account_type == "income":
+        return {"classe":"7", "sous_classe":"10", "compte":"701", "sous_compte":"0000"}  # Ventes
+    elif account_type == "expense":
+        return {"classe":"6", "sous_classe":"10", "compte":"601", "sous_compte":"0000"}  # Achats
+    else:
+        return {"classe":"0", "sous_classe":"00", "compte":"000", "sous_compte":"0000"}
+
+# --- OrderViewSet ---
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -175,7 +218,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        order_id = self.request.query_params.get('order_id')  # récupère order_id depuis la query string
+        order_id = self.request.query_params.get('order_id')
         if order_id:
             queryset = queryset.filter(order_id=order_id)
         return queryset
@@ -184,59 +227,88 @@ class OrderViewSet(viewsets.ModelViewSet):
         order = serializer.save()
         partner = order.partner
 
-        # Compte du client
-        account_client = Account.objects.filter(partner=partner, account_type='asset_receivable').first()
-        if not account_client:
-            account_client = Account.objects.create(
-                name=f"Client {partner.name}",
-                account_type="asset_receivable",
-                partner=partner
+        # --- Fonction utilitaire pour créer ou récupérer un compte ---
+        def get_or_create_account(partner, account_type, name):
+            account = Account.objects.filter(partner=partner, account_type=account_type, name=name).first()
+            if not account:
+                structure = get_account_structure(account_type)
+                account = Account.objects.create(
+                    name=name,
+                    account_type=account_type,
+                    partner=partner,
+                    classe=structure["classe"],
+                    sous_classe=structure["sous_classe"],
+                    compte=structure["compte"],
+                    sous_compte=structure["sous_compte"],
+                )
+            return account
+
+        # --- Création / récupération des comptes ---
+        account_client = get_or_create_account(partner, "asset_receivable", f"Client {partner.name}") if getattr(partner, 'is_client', False) else None
+        account_supplier = get_or_create_account(partner, "liability_payable", f"Fournisseur {partner.name}") if getattr(partner, 'is_supplier', False) else None
+        account_sales = get_or_create_account(None, "income", "Ventes")
+        account_purchase = get_or_create_account(None, "expense", "Achats")
+        account_cash = get_or_create_account(None, "asset_cash", "Caisse")
+
+        # --- VENTES (si partenaire client) ---
+        if account_client:
+            journal_sale = Journal.objects.filter(type='sale').first()
+            if not journal_sale:
+                journal_sale = Journal.objects.create(name='Journal des ventes', type='sale')
+
+            entry_sale = JournalEntry.objects.create(
+                journal=journal_sale,
+                reference=f"COM-{order.id}",
+                date=order.date
             )
 
-        # Compte Ventes
-        account_sales = Account.objects.filter(account_type='income', name='Ventes').first()
-        if not account_sales:
-            account_sales = Account.objects.create(
-                name="Ventes",
-                account_type="income"
+            # Débit client
+            JournalItem.objects.create(
+                entry=entry_sale,
+                account=account_client,
+                debit=order.total_amount,
+                credit=0,
+                label=f"Commande {order.id} - {partner.name}"
             )
 
-        # Compte Caisse ou Banque (si paiement direct)
-        account_cash = Account.objects.filter(account_type='asset_cash', name='Caisse').first()
-        if not account_cash:
-            account_cash = Account.objects.create(
-                name="Caisse",
-                account_type="asset_cash"
+            # Crédit ventes
+            JournalItem.objects.create(
+                entry=entry_sale,
+                account=account_sales,
+                debit=0,
+                credit=order.total_amount,
+                label=f"Vente {order.id}"
             )
 
-        # Créer l'écriture comptable du montant total de la commande
-        journal = Journal.objects.filter(type='sale').first()
-        if not journal:
-            journal = Journal.objects.create(name='Journal des ventes', type='sale')
+        # --- ACHATS (si partenaire fournisseur) ---
+        if account_supplier:
+            journal_purchase = Journal.objects.filter(type='purchase').first()
+            if not journal_purchase:
+                journal_purchase = Journal.objects.create(name='Journal des achats', type='purchase')
 
-        entry = JournalEntry.objects.create(
-            journal=journal,
-            reference=f"COM-{order.id}",
-            date=order.date
-        )
+            entry_purchase = JournalEntry.objects.create(
+                journal=journal_purchase,
+                reference=f"ACH-{order.id}",
+                date=order.date
+            )
 
-        # Débit : client
-        JournalItem.objects.create(
-            entry=entry,
-            account=account_client,
-            debit=order.total_amount,
-            credit=0,
-            label=f"Commande {order.id} - {partner.name}"
-        )
+            # Débit achats
+            JournalItem.objects.create(
+                entry=entry_purchase,
+                account=account_purchase,
+                debit=order.total_amount,
+                credit=0,
+                label=f"Achat {order.id} - {partner.name}"
+            )
 
-        # Crédit : ventes
-        JournalItem.objects.create(
-            entry=entry,
-            account=account_sales,
-            debit=0,
-            credit=order.total_amount,
-            label=f"Vente {order.id}"
-        )
+            # Crédit fournisseur
+            JournalItem.objects.create(
+                entry=entry_purchase,
+                account=account_supplier,
+                debit=0,
+                credit=order.total_amount,
+                label=f"Dette fournisseur {order.id}"
+            )
 
 
 # éléments de commande
@@ -252,6 +324,49 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         return queryset
 
 # paiements
+
+def generate_unique_code(prefix=''):
+    year = datetime.date.today().year
+
+    # Récupérer le max des codes pour l'année courante
+    last_code = (
+        Account.objects
+        .filter(code__startswith=str(year))
+        .aggregate(max_code=Max('code'))
+        .get('max_code')
+    )
+
+    if last_code:
+        # Extraire la partie numérique après l'année
+        last_number = int(last_code[-4:])
+        new_number = last_number + 1
+    else:
+        new_number = 1
+
+    # Formatter : 20250001
+    return f"{year}{new_number:04d}"
+
+
+def get_default_currency():
+    # Essaie de récupérer la devise marquée par défaut
+    default = Currency.objects.filter(is_default=True).first()
+    if default:
+        return default
+
+    # Sinon, prend la première devise existante
+    currency = Currency.objects.first()
+    if currency:
+        return currency
+
+    # Si aucune devise n'existe → en créer une
+    return Currency.objects.create(
+        name="Ariary",
+        code="MGA",
+        symbol="Ar",
+        is_default=True
+    )
+
+
 class PaymentViewSet(viewsets.ModelViewSet):
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
@@ -294,20 +409,53 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         # Déterminer le compte à débiter/créditer
         if mode == 'cod':
-            account_debit = account_partner
+            account_debit = Account.objects.filter(account_type='asset_cash', name='account_name').first()
             journal = None
         else:
+            account_name = mapping['account_name']
             account_debit = Account.objects.filter(account_type='asset_cash', name=mapping['account_name']).first()
             if not account_debit:
-                raise serializers.ValidationError(
-                    f"Le compte '{mapping['account_name']}' n'existe pas. Créez-le d'abord."
+                # Définir des valeurs différentes selon le type
+                if account_name.lower() == 'caisse':
+                    code = generate_unique_code(prefix='CA')  # CA pour caisse
+                    classe = '1'
+                    sous_classe = '01'
+                    compte = '101'
+                    sous_compte = '0001'
+                elif account_name.lower() == 'banque':
+                    code = generate_unique_code(prefix='BA')  # BA pour banque
+                    classe = '1'
+                    sous_classe = '02'
+                    compte = '102'
+                    sous_compte = '0001'
+                else:
+                    code = generate_unique_code()
+                    classe = '1'
+                    sous_classe = '03'
+                    compte = '103'
+                    sous_compte = '0001'
+
+                # Créer le compte avec toutes les infos
+                account_debit = Account.objects.create(
+                    name=account_name,
+                    account_type='asset_cash',
+                    code=code,
+                    classe=classe,
+                    sous_classe=sous_classe,
+                    compte=compte,
+                    sous_compte=sous_compte,
+                    currency=get_default_currency,  # objet Currency par défaut
+                    reconcile=False,
+                    note=f"Compte créé automatiquement pour {account_name}"
                 )
 
             # Journal associé
             journal = Journal.objects.filter(type=mapping['journal_type']).first()
             if not journal:
-                raise serializers.ValidationError(
-                    f"Aucun journal de type '{mapping['journal_type']}' n'existe. Créez-le d'abord."
+                journal = Journal.objects.create(
+                    name=f"Journal {mapping['account_name']}",
+                    code=mapping['account_name'][:2].upper(),  # ex: CA pour caisse, BA pour banque
+                    type=mapping['journal_type']
                 )
 
         # Créer l'écriture comptable si ce n'est pas cod

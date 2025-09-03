@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from dal import autocomplete
 from .models import (
     User, Currency, Tax, AccountTag, Account, Journal, JournalEntry, JournalItem,
-    Company, UserProfile, Partner, Order, OrderItem, Product, Category
+    Company, UserProfile, Partner, Order, OrderItem, Product, Category, Payment
 )
 class MyAdmin(admin.ModelAdmin):
     class Media:
@@ -188,3 +188,10 @@ class PartnerAutocomplete(autocomplete.Select2QuerySetView):
         else:
             qs = Partner.objects.none()
         return qs
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('payment_number', 'type', 'mode', 'amount', 'date', 'pattern')
+    list_filter = ('type', 'mode', 'date')
+    search_fields = ('payment_number', 'description', 'pattern__name')  # recherche sur partner
+    ordering = ('-date',)

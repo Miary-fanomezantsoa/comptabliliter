@@ -10,6 +10,10 @@ import CommandePayment from './components/CommandePayment.vue';
 import Balance from './components/balance.vue';
 import Livre from './components/GeneralLedger.vue';
 import Index from './components/index.vue';
+import User from './components/User.vue';
+import Paramettre from './components/Parametre.vue'
+import produit from './components/ProductView.vue'
+
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -22,6 +26,9 @@ const routes = [
     component: LayoutLModern,
     meta: { requiresAuth: true },
     children: [
+      {path: 'produit', name: 'produit',component: produit},
+      {path: 'Paramettre', name: 'Paramettre',component: Paramettre},
+      {path: 'User', name: 'User',component: User},
       { path: 'dashboard', name: 'Dashboard', component: Dashboard },
       { path: 'comptes', name: 'Comptes', component: Comptes },
       { path: 'partners/:partnerId?', name: 'Partners', component: Partners },

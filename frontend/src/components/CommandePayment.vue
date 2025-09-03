@@ -29,14 +29,13 @@
           <p><strong>Date:</strong> {{ selectedOrder.date }}</p>
           <p><strong>État:</strong></p>
           <select v-model="selectedOrder.status"
-                  @change="updateOrderStatus(selectedOrder)"
-                  class="border border-gray-300 rounded px-2 py-1 w-full">
-            <option value="pending">En attente</option>
-            <option value="confirmed">Confirmée</option>
-            <option value="shipped">Expédiée</option>
-            <option value="delivered">Livrée</option>
-            <option value="cancelled">Annulée</option>
-          </select>
+        @change="updateOrderStatus(selectedOrder)"
+        class="border border-gray-300 rounded px-2 py-1 w-full">
+  <option v-for="status in allowedStatuses(selectedOrder.status)" :key="status" :value="status">
+    {{ statusLabel(status) }}
+  </option>
+</select>
+
         </div>
 
         <!-- Produits -->
@@ -123,7 +122,7 @@
           <div v-for="(item, index) in newOrderItems" :key="index" class="flex flex-wrap gap-2 items-center">
             <select v-model="item.product_id" class="border border-gray-300 rounded px-2 py-1">
               <option value="" disabled>Choisir un produit</option>
-              <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} - {{ p.price }} Ar</option>
+              <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} - {{ p.unit_price }} Ar</option>
             </select>
             <input type="number" v-model.number="item.quantity" min="1"
                    class="border border-gray-300 rounded px-2 py-1 w-20"/>
@@ -149,7 +148,6 @@
 
 <script>
 import api from '../axios';
-
 export default {
   data() {
     return {
@@ -172,26 +170,64 @@ export default {
   },
   computed: {
   orderTotal() {
-    return this.newOrderItems.reduce((sum, item) => {
-      const product = this.products.find(p => p.id === item.product_id);
+  let sum = 0;
+
+  this.newOrderItems.forEach(item => {
+    const product = this.products.find(p => p.id === item.product_id);
+    const price = product ? Number(product.unit_price) : 0;
+    const quantity = item.quantity ? Number(item.quantity) : 0;
+    sum += price * quantity;
+  });
+
+  return sum;
+},
+selectedOrderTotal() {
+    if (!this.selectedOrder) return 0;
+    let sum = 0;
+    this.orderItems.forEach(item => {
+    const product = this.products.find(p => p.name === item.product);
+      console.log("Produit:", product);
       const price = product ? Number(product.unit_price) : 0;
+      console.log("price:", price);
       const quantity = item.quantity ? Number(item.quantity) : 0;
-      return sum + price * quantity;
-    }, 0);
+      sum += price * quantity;
+    });
+    return sum;
   },
 
+  // Total payé pour la commande sélectionnée
+  selectedOrderPaid() {
+    return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  },
+
+  // Reste à payer pour la commande sélectionnée
+  remainingAmount() {
+    return this.selectedOrderTotal - this.selectedOrderPaid;
+  },
   // Somme des paiements déjà faits pour la commande sélectionnée
   totalPaid() {
     return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   },
-
-  // Reste à payer
-  remainingAmount() {
-    return (this.orderTotal - this.totalPaid)*(-1);
-  }
 },
-
   methods: {
+  allowedStatuses(currentStatus) {
+    const orderFlow = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+    const currentIndex = orderFlow.indexOf(currentStatus);
+    if (currentIndex === -1) return orderFlow; // fallback
+    return orderFlow.slice(currentIndex); // uniquement les statuts à partir du statut actuel
+  },
+
+  statusLabel(status) {
+    const labels = {
+      pending: 'En attente',
+      confirmed: 'Confirmée',
+      shipped: 'Expédiée',
+      delivered: 'Livrée',
+      cancelled: 'Annulée'
+    };
+    return labels[status] || status;
+  },
+
   async updateOrderStatus(order) {
     try {
       const res = await api.patch(`/api/orders/${order.id}/`, {

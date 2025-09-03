@@ -11,9 +11,17 @@
           :key="link.to"
           :to="link.to"
           class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 transform hover:translate-x-2 hover:bg-gray-100"
+          :class="{ 'bg-yellow-100 text-yellow-600 font-bold': $route.path === link.to }"
         >
-          <span class="text-lg">{{ link.icon }}</span>
-          <span class="font-semibold transition-colors duration-300 hover:text-yellow-300">
+          <span class="text-lg">
+            <template v-if="link.iconIsImg">
+              <img :src="link.icon" alt="" class="w-5 h-5"/>
+            </template>
+            <template v-else>
+              {{ link.icon }}
+            </template>
+          </span>
+          <span class="font-semibold transition-colors duration-300 hover:text-yellow-500">
             {{ link.label }}
           </span>
         </router-link>
@@ -29,6 +37,7 @@
 
 <script>
 import HeaderWithNav from "@/components/Header.vue";
+import paramIcon from "../../public/paramettre.png"; // mieux de mettre dans assets
 
 export default {
   name: "LayoutLModern",
@@ -36,13 +45,16 @@ export default {
   data() {
     return {
       navLinks: [
-        { to: "/dashboard", label: "Dashboard", icon: "🏠" },
-        { to: "/comptes", label: "Comptes", icon: "💰" },
-        { to: "/journals", label: "Journal", icon: "📒" },
-        { to: "/partners-list", label: "Partenaires", icon: "🤝" },
-        { to: "/commande&payment", label: "Commande & Paiement", icon: "🛒" },
-        { to: "/balance", label: "Balance", icon: "📊" },
-        { to: "/livre", label: "Livre comptable", icon: "📚" },
+        { to: "/dashboard", label: "Dashboard", icon: "🏠", iconIsImg: false },
+        { to: "/comptes", label: "Comptes", icon: "💰", iconIsImg: false },
+        { to: "/journals", label: "Journal", icon: "📒", iconIsImg: false },
+        { to: "/partners-list", label: "Partenaires", icon: "🤝", iconIsImg: false },
+        { to: "/commande&payment", label: "Commande & Paiement", icon: "🛒", iconIsImg: false },
+        { to: "/balance", label: "Balance", icon: "📊", iconIsImg: false },
+        { to: "/livre", label: "Livre comptable", icon: "📚", iconIsImg: false },
+        { to: "/User", label: "Gérer les utilisateurs", icon: "👤", iconIsImg: false },
+        {to: "/produit", label: "Produits", icon:"🍫 "},
+        { to: "/Paramettre", label: "Paramètres", icon: paramIcon, iconIsImg: true }
       ],
     };
   },

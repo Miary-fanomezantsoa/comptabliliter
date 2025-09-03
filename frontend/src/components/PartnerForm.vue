@@ -98,6 +98,14 @@
         <label class="block text-orange-700 mb-1">Nom de la nouvelle entreprise :</label>
         <input v-model="newCompanyName" type="text"
                class="w-full p-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600"/>
+               <label class="block text-orange-700 mb-1 mt-3">Devise :</label>
+  <select v-model="newCompanyCurrency" required
+          class="w-full p-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600">
+    <option value="">-- Sélectionnez une devise --</option>
+    <option v-for="cur in currencies" :key="cur.id" :value="cur.id">
+      {{ cur.code }} - {{ cur.name }}
+    </option>
+  </select>
       </div>
 
       <!-- Boutons dynamiques -->
@@ -133,6 +141,7 @@ export default {
       isEdit: false,
       selectedCompany: null,
       newCompanyName: "",
+      newCompanyCurrency: "",
       partner: {
         id: null,
         name: "",
@@ -147,12 +156,18 @@ export default {
         company: null,
       },
       companies: [],
+      currencies: [], // <-- manquait ici
     };
   },
   async created() {
     try {
+      // Charger les entreprises existantes
       const res = await api.get("/api/companies/");
       this.companies = res.data;
+
+      // Charger les devises existantes
+      const curRes = await api.get("/api/currencies/");
+      this.currencies = curRes.data;
 
       // Si partenaire à modifier
       const partnerId = this.$route.params.partnerId;
@@ -173,9 +188,18 @@ export default {
     async createPartner(mode) {
       let companyId = this.selectedCompany;
 
-      if (this.selectedCompany === "new" && this.newCompanyName.trim() !== "") {
+      // Cas où on crée une nouvelle entreprise
+      if (this.selectedCompany === "new") {
+        if (!this.newCompanyName.trim() || !this.newCompanyCurrency) {
+          alert("Veuillez entrer un nom d'entreprise et sélectionner une devise.");
+          return;
+        }
+
         try {
-          const res = await api.post("/api/companies/", { name: this.newCompanyName });
+          const res = await api.post("/api/companies/", {
+            name: this.newCompanyName,
+            currency: this.newCompanyCurrency, // <-- ajouté ici correctement
+          });
           companyId = res.data.id;
           this.companies.push(res.data);
         } catch (error) {
@@ -185,6 +209,7 @@ export default {
         }
       }
 
+      // Création du partenaire
       try {
         await api.post("/api/partners/", {
           name: this.partner.name,
@@ -205,6 +230,7 @@ export default {
           this.partner = { id:null, name:"", type:"person", email:"", phone:"", mobile:"", street:"", city:"", country:"", role:"client", company:null };
           this.selectedCompany = null;
           this.newCompanyName = "";
+          this.newCompanyCurrency = "";
         }
       } catch (error) {
         console.error(error);

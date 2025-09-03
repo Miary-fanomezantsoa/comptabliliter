@@ -12,9 +12,10 @@
 import GeminiChat from './components/gemini.vue'; // assure-toi que le nom du fichier est correct
 import JournalManager from './components/JournalManager.vue'
 import index from './components/index.vue'
+import Header from './components/Header.vue'
 
 export default {
-  components: { GeminiChat },
+  components: { GeminiChat},
   name: 'App'
 }
 </script>

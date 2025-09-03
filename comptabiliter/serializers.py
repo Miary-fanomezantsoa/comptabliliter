@@ -6,13 +6,32 @@ from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem,
     Company, UserProfile, HistoriqueModification, User, Partner, Product, OrderItem, Order, Payment,
-    Invoice
+    Invoice, Category
 )
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email','role']
+        fields = ['id', 'username', 'email', 'role', 'password', 'is_superuser']
+        extra_kwargs = {'password': {'write_only': True}}
+        read_only_fields = ['is_superuser']
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = User(**validated_data)
+        if password:
+            user.set_password(password)
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 class SafeUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +43,11 @@ class SafeUserSerializer(serializers.ModelSerializer):
             'groups': {'read_only': True},
             'user_permissions': {'read_only': True}
         }
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'
 
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,6 +76,13 @@ class AccountTagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AccountSerializer(serializers.ModelSerializer):
+    taxes = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tax.objects.all(), required=False
+    )
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=AccountTag.objects.all(), required=False
+    )
+
     class Meta:
         model = Account
         fields = [
@@ -61,12 +92,12 @@ class AccountSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             "sous_classe": {"required": False, "allow_null": True},
-            "compte_parent": {"required": False, "allow_null": True},
+            "compte": {"required": False, "allow_null": True},  # ⚠️ ton extra_kwargs contenait "compte_parent" qui n'existe pas
             "sous_compte": {"required": False, "allow_null": True},
         }
 
     def validate(self, data):
-        account = Account(**data)
+        account = Account(**{k: v for k, v in data.items() if k not in ['taxes', 'tags']})
         try:
             account.clean()
         except ValidationError as e:
@@ -74,6 +105,27 @@ class AccountSerializer(serializers.ModelSerializer):
                 e.message_dict if hasattr(e, 'message_dict') else str(e)
             )
         return data
+
+    def create(self, validated_data):
+        taxes = validated_data.pop("taxes", [])
+        tags = validated_data.pop("tags", [])
+        account = super().create(validated_data)
+        if taxes:
+            account.taxes.set(taxes)
+        if tags:
+            account.tags.set(tags)
+        return account
+
+    def update(self, instance, validated_data):
+        taxes = validated_data.pop("taxes", None)
+        tags = validated_data.pop("tags", None)
+        instance = super().update(instance, validated_data)
+        if taxes is not None:
+            instance.taxes.set(taxes)
+        if tags is not None:
+            instance.tags.set(tags)
+        return instance
+
 
 
 class JournalSerializer(serializers.ModelSerializer):
