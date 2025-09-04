@@ -1,10 +1,17 @@
 <template>
   <div class="min-h-screen bg-gray-100 p-6">
-    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6">
-      <h1 class="text-3xl font-bold text-gray-800 mb-6">📦 Gestion Produits</h1>
+    <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
+
+      <h1 class="text-3xl font-bold text-gray-800">📦 Gestion Produits</h1>
+
+      <!-- Bouton Ajouter produit -->
+      <button @click="showForm = !showForm"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        {{ showForm ? "❌ Annuler" : "➕ Ajouter Produit" }}
+      </button>
 
       <!-- Formulaire d'ajout produit -->
-      <form @submit.prevent="addProduct" class="space-y-4 bg-gray-50 p-4 rounded-lg shadow">
+      <form v-if="showForm" @submit.prevent="addProduct" class="space-y-4 bg-gray-50 p-4 rounded-lg shadow">
         <div>
           <label class="block text-sm font-medium text-gray-700">Nom du produit</label>
           <input v-model="newProduct.name" type="text"
@@ -45,8 +52,14 @@
         </button>
       </form>
 
+      <!-- Recherche -->
+      <div class="mt-4">
+        <input v-model="searchQuery" type="text" placeholder="🔍 Rechercher par nom ou catégorie"
+          class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"/>
+      </div>
+
       <!-- Liste des produits -->
-      <h2 class="text-2xl font-semibold text-gray-800 mt-8 mb-4">📋 Liste des Produits</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mt-4 mb-2">📋 Liste des Produits</h2>
       <div class="overflow-x-auto">
         <table class="w-full border border-gray-200 rounded-lg overflow-hidden">
           <thead class="bg-gray-200">
@@ -59,7 +72,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="prod in products" :key="prod.id" class="border-b hover:bg-gray-50">
+            <tr v-for="prod in filteredProducts" :key="prod.id" class="border-b hover:bg-gray-50">
               <td class="px-4 py-2">{{ prod.name }}</td>
               <td class="px-4 py-2">{{ prod.category_name }}</td>
               <td class="px-4 py-2">{{ prod.unit_price }} Ar</td>
@@ -69,6 +82,7 @@
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </template>
@@ -82,6 +96,8 @@ export default {
     return {
       products: [],
       categories: [],
+      searchQuery: "",
+      showForm: false,
       newProduct: {
         name: "",
         category: null,
@@ -90,6 +106,15 @@ export default {
         description: "",
       },
     };
+  },
+  computed: {
+    filteredProducts() {
+      const query = this.searchQuery.toLowerCase();
+      return this.products.filter(prod =>
+        prod.name.toLowerCase().includes(query) ||
+        (prod.category_name && prod.category_name.toLowerCase().includes(query))
+      );
+    }
   },
   methods: {
     async fetchProducts() {
@@ -104,6 +129,7 @@ export default {
       await api.post("api/products/", this.newProduct);
       this.newProduct = { name: "", category: null, unit_price: "", quantity: 0, description: "" };
       this.fetchProducts();
+      this.showForm = false; // Masquer le formulaire après ajout
     },
   },
   mounted() {

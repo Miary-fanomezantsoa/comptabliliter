@@ -13,7 +13,14 @@
           Ajouter un compte
         </button>
       </div>
-
+        <div class="mb-4">
+  <input
+    v-model="searchTerm"
+    type="text"
+    placeholder="🔍 Rechercher un compte..."
+    class="w-full sm:w-1/2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#d2691e]"
+  />
+</div>
       <!-- Tableau -->
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
@@ -28,7 +35,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="compte in comptes" :key="compte.id" class="hover:bg-[#fce8d8] transition-colors">
+            <tr v-for="compte in filteredComptes" :key="compte.id" class="hover:bg-[#fce8d8] transition-colors">
               <td class="py-3 px-6">{{ compte.code }}</td>
               <td class="py-3 px-6">{{ compte.name }}</td>
               <td class="py-3 px-6">{{ compte.account_type }}</td>
@@ -231,6 +238,7 @@ import plan_comptable_general_2005 from '../../compte.json';
 export default {
   data() {
     return {
+    searchTerm: '',
     planComptable: plan_comptable_general_2005.plan_comptable_general_2005,
       comptes: [],
       sousClassesDisponibles: [],
@@ -271,6 +279,17 @@ form: {
 
     }
   },
+  computed: {
+  filteredComptes() {
+    if (!this.searchTerm) return this.comptes;
+    const term = this.searchTerm.toLowerCase();
+    return this.comptes.filter(c =>
+      c.code.toLowerCase().includes(term) ||
+      c.name.toLowerCase().includes(term) ||
+      (c.account_type && c.account_type.toLowerCase().includes(term))
+    );
+  }
+},
   methods: {
   requiresPartner(type) {
       // Les types qui nécessitent un partenaire

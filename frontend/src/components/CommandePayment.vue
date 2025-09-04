@@ -3,18 +3,23 @@
     <div class="max-w-7xl mx-auto space-y-6">
 
       <!-- Header commandes -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 class="text-3xl font-bold text-orange-900">Commandes</h2>
-      </div>
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-xl shadow-lg text-white">
+  <h2 class="text-3xl font-bold">🛒 Commandes</h2>
+  <p class="text-lg opacity-90">Gestion des commandes et paiements</p>
+</div>
+
 
       <!-- Liste des commandes -->
       <ul class="bg-white rounded-lg shadow divide-y divide-gray-200">
         <li v-for="order in orders" :key="order.id"
-            @click="selectOrder(order)"
-            :class="{'bg-orange-200 font-semibold': selectedOrder && selectedOrder.id === order.id, 'cursor-pointer hover:bg-orange-100': true}"
-            class="px-4 py-3 flex justify-between items-center">
-          <span>Commande #{{ order.id }} - {{ order.partner?.name || '-' }} - {{ order.status }}</span>
-        </li>
+    @click="selectOrder(order)"
+    :class="['cursor-pointer px-4 py-3 flex justify-between items-center rounded-lg transition', selectedOrder && selectedOrder.id === order.id ? 'bg-orange-200 shadow-md font-semibold' : 'hover:bg-orange-100']">
+  <span>Commande #{{ order.id }} - {{ order.partner?.name || '-' }}</span>
+  <span class="px-2 py-1 rounded-full text-sm font-medium"
+        :class="order.status === 'paid' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'">
+    {{ statusLabel(order.status) }}
+  </span>
+</li>
       </ul>
 
       <!-- Détails commande -->
@@ -35,23 +40,24 @@
         </div>
 
         <!-- Produits -->
-        <div v-if="orderItems.length">
-          <h3 class="text-lg font-semibold text-orange-800 mb-2">Produits</h3>
-          <table class="min-w-full table-auto border border-gray-300 rounded overflow-hidden">
-            <thead class="bg-orange-700 text-white">
-              <tr>
-                <th class="px-4 py-2 text-left">Produit</th>
-                <th class="px-4 py-2 text-left">Quantité</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="item in orderItems" :key="item.id" class="even:bg-orange-50">
-                <td class="px-4 py-2">{{ item.product }}</td>
-                <td class="px-4 py-2">{{ item.quantity }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="bg-white p-4 rounded-xl shadow-md">
+  <h3 class="text-lg font-semibold text-orange-800 mb-3 border-b pb-2">Produits</h3>
+  <table class="min-w-full table-auto border border-gray-200 rounded overflow-hidden">
+    <thead class="bg-orange-700 text-white">
+      <tr>
+        <th class="px-4 py-2 text-left">Produit</th>
+        <th class="px-4 py-2 text-left">Quantité</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="item in orderItems" :key="item.id" class="even:bg-orange-50 hover:bg-orange-100 transition-colors">
+        <td class="px-4 py-2">{{ item.product }}</td>
+        <td class="px-4 py-2">{{ item.quantity }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
         <!-- Facturation -->
 <div class="flex items-center gap-4 mt-4">
   <button @click="createInvoice"
@@ -124,29 +130,51 @@
         </div>
 
         <!-- Produits -->
-        <div class="space-y-2">
-          <h3 class="text-lg font-semibold text-orange-800">Produits</h3>
-          <div v-for="(item, index) in newOrderItems" :key="index" class="flex flex-wrap gap-2 items-center">
-            <select v-model="item.product_id" class="border border-gray-300 rounded px-2 py-1">
-              <option value="" disabled>Choisir un produit</option>
-              <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} - {{ p.unit_price }} Ar</option>
-            </select>
-            <input type="number" v-model.number="item.quantity" min="1"
-                   class="border border-gray-300 rounded px-2 py-1 w-20"/>
-            <button @click="removeNewItem(index)"
-                    class="bg-red-600 text-white rounded px-2 py-1 hover:bg-red-700 transition">Supprimer</button>
-            <span>Total: {{ itemTotal(item) }} Ar</span>
-          </div>
-          <button @click="addNewItemLine"
-                  class="bg-orange-600 text-white rounded px-4 py-1 hover:bg-orange-700 transition">Ajouter produit</button>
-        </div>
+        <div class="space-y-4 bg-white p-6 rounded-xl shadow-md">
+  <h3 class="text-xl font-semibold text-orange-800 border-b pb-2 mb-4">Produits</h3>
 
-        <h3 class="text-lg font-semibold text-orange-800">Total commande: {{ orderTotal }} Ar</h3>
-        <button @click="createOrder"
-                class="bg-orange-600 text-white rounded px-4 py-2 hover:bg-orange-700 transition w-full sm:w-auto">
-          Créer commande
-        </button>
-      </div>
+  <div v-for="(item, index) in newOrderItems" :key="index" class="flex flex-wrap items-center gap-4 p-3 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition">
+
+    <!-- Choix produit -->
+    <select v-model="item.product_id" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+      <option value="" disabled>Choisir un produit</option>
+      <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} - {{ p.unit_price }} Ar</option>
+    </select>
+
+    <!-- Quantité -->
+    <input type="number" v-model.number="item.quantity" min="1"
+           class="w-24 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 text-center"
+           placeholder="Qté"/>
+
+    <!-- Supprimer -->
+    <button @click="removeNewItem(index)"
+            class="flex items-center gap-1 bg-red-600 text-white rounded-lg px-3 py-2 hover:bg-red-700 transition shadow-sm">
+      🗑 Supprimer
+    </button>
+
+    <!-- Total -->
+    <span class="font-semibold text-orange-700 ml-auto">Total: {{ itemTotal(item) }} Ar</span>
+  </div>
+
+  <!-- Ajouter produit -->
+  <button @click="addNewItemLine"
+          class="flex items-center gap-2 justify-center w-full bg-orange-600 text-white rounded-lg px-4 py-2 hover:bg-orange-700 transition shadow-md">
+    ➕ Ajouter produit
+  </button>
+
+  <!-- Total commande -->
+  <div class="flex justify-between items-center mt-4 p-4 bg-orange-50 rounded-lg shadow-inner">
+    <span class="text-lg font-semibold text-orange-800">Total commande:</span>
+    <span class="text-xl font-bold text-orange-900">{{ orderTotal }} Ar</span>
+  </div>
+
+  <!-- Créer commande -->
+  <button @click="createOrder"
+          class="w-full sm:w-auto flex justify-center bg-orange-600 text-white font-bold rounded-lg px-6 py-3 hover:bg-orange-700 transition shadow-lg">
+    🛒 Créer commande
+  </button>
+</div>
+</div>
 
     </div>
   </div>

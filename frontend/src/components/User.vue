@@ -1,8 +1,10 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted , computed } from 'vue'
 import api from '../axios'
 
 const users = ref([])
+const searchQuery = ref('')
+const showForm = ref(false)
 
 const form = ref({
   id: null,
@@ -47,6 +49,7 @@ const saveUser = async () => {
 
     resetForm()
     fetchUsers()
+    showForm.value = false // Masquer le formulaire après sauvegarde
   } catch (err) {
     console.error(err)
   }
@@ -55,6 +58,7 @@ const saveUser = async () => {
 const editUser = (user) => {
   form.value = { ...user, password: '', confirmPassword: '', currentPassword: '' }
   isEditing.value = true
+  showForm.value = true
 }
 
 const deleteUser = async (id) => {
@@ -71,44 +75,47 @@ const resetForm = () => {
   isEditing.value = false
 }
 
+const filteredUsers = computed(() => {
+  const query = searchQuery.value.toLowerCase()
+  return users.value.filter(u =>
+    u.username.toLowerCase().includes(query) ||
+    u.email.toLowerCase().includes(query)
+  )
+})
+
 onMounted(fetchUsers)
 </script>
 
 <template>
-<div class="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
+<div class="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg space-y-6">
   <h2 class="text-2xl sm:text-3xl font-bold mb-4 text-center">Gestion des utilisateurs</h2>
 
-  <form @submit.prevent="saveUser" class="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <!-- Bouton Ajouter utilisateur -->
+  <button @click="showForm = !showForm"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+    {{ showForm ? '❌ Annuler' : '➕ Ajouter utilisateur' }}
+  </button>
+
+  <!-- Formulaire -->
+  <form v-if="showForm" @submit.prevent="saveUser" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
     <input v-model="form.username" placeholder="Username" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
     <input v-model="form.email" placeholder="Email" type="email" class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
 
-    <!-- Mot de passe actuel uniquement si édition -->
     <div v-if="isEditing" class="relative w-full">
-      <input
-        :type="showPassword ? 'text' : 'password'"
-        v-model="form.currentPassword"
-        placeholder="Mot de passe actuel"
+      <input :type="showPassword ? 'text' : 'password'" v-model="form.currentPassword" placeholder="Mot de passe actuel"
         class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"/>
       <button type="button" @click="showPassword = !showPassword" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500">
         {{ showPassword ? '🙈' : '👁️' }}
       </button>
     </div>
 
-    <!-- Nouveau mot de passe -->
     <div class="relative w-full">
-      <input
-        :type="showPassword ? 'text' : 'password'"
-        v-model="form.password"
-        placeholder="Nouveau mot de passe"
+      <input :type="showPassword ? 'text' : 'password'" v-model="form.password" placeholder="Nouveau mot de passe"
         class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"/>
     </div>
 
-    <!-- Confirmer mot de passe -->
     <div class="relative w-full">
-      <input
-        :type="showPassword ? 'text' : 'password'"
-        v-model="form.confirmPassword"
-        placeholder="Confirmer mot de passe"
+      <input :type="showPassword ? 'text' : 'password'" v-model="form.confirmPassword" placeholder="Confirmer mot de passe"
         class="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10"/>
     </div>
 
@@ -127,8 +134,13 @@ onMounted(fetchUsers)
     </div>
   </form>
 
+  <!-- Recherche -->
+  <input v-model="searchQuery" type="text" placeholder="🔍 Rechercher par username ou email"
+         class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300 mt-4"/>
+
+  <!-- Liste utilisateurs -->
   <div class="overflow-x-auto">
-    <table class="w-full table-auto border-collapse border border-gray-200">
+    <table class="w-full table-auto border-collapse border border-gray-200 mt-2">
       <thead class="bg-gray-100">
         <tr>
           <th class="border px-4 py-2">Username</th>
@@ -138,7 +150,7 @@ onMounted(fetchUsers)
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id" class="hover:bg-gray-50">
+        <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50">
           <td class="border px-4 py-2">{{ user.username }}</td>
           <td class="border px-4 py-2">{{ user.email }}</td>
           <td class="border px-4 py-2">{{ user.role }}</td>
