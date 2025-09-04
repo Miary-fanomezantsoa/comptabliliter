@@ -1,7 +1,7 @@
 import io
 import logging
 import os
-from argparse import Action
+from ai_assistant.services.gemini import ask_gemini
 from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
@@ -894,35 +894,145 @@ class TrialBalanceByTypeView(APIView):
             "is_balanced": grand_total_debit_total == grand_total_credit_total,
         })
 
-def create_notifications_for_user(user):
-    # Exemple d’analyse simple
-    journals = Journal.objects.all()
-    refs = [j.reference for j in journals]
-    duplicates = [ref for ref in set(refs) if refs.count(ref) > 1]
 
-    if duplicates:
+#notification
+def analyze_database(user):
+    """
+    Analyse les écritures comptables et les partenaires.
+    Ajoute une notification pour chaque problème détecté,
+    avec une suggestion IA via Gemini.
+    """
+    problems_found = False
+
+    # Récupérer toutes les écritures comptables
+    entries = JournalEntry.objects.all()
+
+    for entry in entries:
+        items = entry.lines.all()  # JournalItem liés à cette écriture
+        debit_total = items.aggregate(total=Sum('debit'))['total'] or 0
+        credit_total = items.aggregate(total=Sum('credit'))['total'] or 0
+
+        # Vérifier qu'il y a au moins deux lignes
+        if items.count() < 2:
+            message = f"L'écriture {entry.id} du journal {entry.journal.code} n'a pas assez de lignes (moins de 2)."
+            suggestion = ask_gemini(
+                f"Que doit faire un comptable si une écriture comptable n'a qu'une seule ligne ? "
+                f"Contexte : {message}"
+            )
+            Notification.objects.create(
+                user=user,
+                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                type='error'
+            )
+            problems_found = True
+
+        # Vérifier équilibre débit/crédit
+        if debit_total != credit_total:
+            message = (
+                f"L'écriture {entry.id} du journal {entry.journal.code} "
+                f"n'est pas équilibrée (Débit={debit_total}, Crédit={credit_total})."
+            )
+            suggestion = ask_gemini(
+                f"Comment corriger une écriture comptable déséquilibrée ? "
+                f"Contexte : {message}"
+            )
+            Notification.objects.create(
+                user=user,
+                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                type='error'
+            )
+            problems_found = True
+
+        # Vérifier référence vide
+        if not entry.reference:
+            message = f"L'écriture {entry.id} du journal {entry.journal.code} n'a pas de référence."
+            suggestion = ask_gemini(
+                f"Pourquoi est-il important d'avoir une référence sur une écriture comptable "
+                f"et que doit-on faire si elle est manquante ? "
+                f"Contexte : {message}"
+            )
+            Notification.objects.create(
+                user=user,
+                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                type='warning'
+            )
+            problems_found = True
+
+    # ==== Analyse des partenaires ====
+    partners = Partner.objects.all()
+    for partner in partners:
+        if not partner.is_client and not partner.is_supplier:
+            # Si partenaire ni client ni fournisseur → on ignore
+            continue
+
+        accounts = Account.objects.filter(partner=partner)
+        if not accounts.exists() and not (partner.is_client and partner.is_supplier):
+            message = f"Le partenaire {partner.name} n'a aucun compte comptable associé."
+            suggestion = ask_gemini(
+                f"Quel compte comptable faut-il associer à un partenaire "
+                f"({ 'client' if partner.is_client else 'fournisseur' }) ? "
+                f"Contexte : {partner.name}"
+            )
+            Notification.objects.create(
+                user=user,
+                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                type='error'
+            )
+            problems_found = True
+
+        elif accounts.count() > 2:
+            message = f"Le partenaire {partner.name} possède plus de 2 comptes comptables (actuellement {accounts.count()})."
+            suggestion = ask_gemini(
+                f"Un partenaire ne doit pas avoir plus de 2 comptes comptables. "
+                f"Que doit faire le comptable dans ce cas ? "
+                f"Contexte : {partner.name}"
+            )
+            Notification.objects.create(
+                user=user,
+                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                type='warning'
+            )
+            problems_found = True
+
+    # ==== Si aucune incohérence trouvée ====
+    if not problems_found:
         Notification.objects.create(
             user=user,
-            message=f"Journaux en doublon : {', '.join(duplicates)}",
-            type='warning'
+            message="✅ Analyse terminée : toutes les écritures comptables et partenaires semblent corrects.",
+            type='info'
         )
 
-    actions_without_journal = Action.objects.filter(journal__isnull=True)
-    if actions_without_journal.exists():
-        names = ', '.join([a.name for a in actions_without_journal])
-        Notification.objects.create(
-            user=user,
-            message=f"Actions sans journal : {names}",
-            type='error'
-        )
+
 @api_view(['GET'])
 def get_notifications(request):
-    user = request.user
-    notifications = Notification.objects.filter(user=user, read=False).order_by('-created_at')
+    """
+    Récupère les notifications non lues pour l'utilisateur
+    """
+    notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
     data = [{
-        'id': n.id,
-        'message': n.message,
-        'type': n.type,
-        'created_at': n.created_at
+        "id": n.id,
+        "message": n.message,
+        "type": n.type,
+        "read": n.read,
+        "created_at": n.created_at.strftime("%Y-%m-%d %H:%M:%S")
     } for n in notifications]
     return Response(data)
+
+
+@api_view(['POST'])
+def run_analysis(request):
+    """
+    Lance l'analyse de la base pour l'utilisateur connecté
+    """
+    user = request.user
+    analyze_database(user)
+    return Response({"message": "Analyse terminée, notifications créées."})
+@api_view(['POST'])
+def mark_notification_read(request, pk):
+    try:
+        notif = Notification.objects.get(pk=pk, user=request.user)
+        notif.read = True
+        notif.save()
+        return Response({"message": "Notification marquée comme lue."})
+    except Notification.DoesNotExist:
+        return Response({"error": "Notification non trouvée."}, status=404)

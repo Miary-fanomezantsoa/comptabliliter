@@ -295,6 +295,11 @@ class Payment(models.Model):
         return f"Payment #{self.payment_number}"
 
 class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('info', 'Info'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
     type = models.CharField(max_length=50, default='info')  # info / warning / error
@@ -302,4 +307,4 @@ class Notification(models.Model):
     read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Notification ({self.type}) pour {self.user.username}"
+        return f"{self.type.upper()}: {self.message[:50]}"

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'dal',
     'dal_select2',
     'django_extensions',
+    'ai_assistant',
 ]
 
 MIDDLEWARE = [

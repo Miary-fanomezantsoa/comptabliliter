@@ -14,6 +14,7 @@
                 class="text-white text-2xl hover:text-yellow-300 transition-colors">
           🔔
         </button>
+
         <!-- Badge nombre de notifications -->
         <span v-if="unreadCount"
               class="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -22,10 +23,21 @@
 
         <!-- Dropdown des notifications -->
         <div v-if="showDropdown" class="absolute right-0 mt-2 w-72 bg-white shadow-lg rounded-lg overflow-hidden z-50">
-          <div v-for="notif in notifications" :key="notif.id" class="p-2 border-b last:border-none">
+          <div v-for="notif in notifications" :key="notif.id"
+               class="p-2 border-b last:border-none cursor-pointer hover:bg-gray-100"
+               @click="markAsRead(notif)">
             <span :class="notif.typeClass">{{ notif.message }}</span>
           </div>
+
           <div v-if="!notifications.length" class="p-2 text-gray-500 text-sm">Aucune notification</div>
+
+          <!-- Bouton pour lancer l'analyse -->
+          <div class="p-2 text-center border-t mt-1">
+            <button @click="runAnalysis"
+                    class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition duration-200">
+              🔍 Analyser la DB
+            </button>
+          </div>
         </div>
       </div>
 
@@ -63,10 +75,27 @@ export default {
       }
     };
 
+    const markAsRead = async (notif) => {
+      try {
+        await api.post(`/api/notifications/${notif.id}/mark-read/`);
+        notifications.value = notifications.value.filter(n => n.id !== notif.id);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const runAnalysis = async () => {
+      try {
+        await api.post('/api/run-analysis/');
+        await fetchNotifications(); // recharge les notifications après l'analyse
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
     onMounted(() => {
       fetchNotifications();
-      // Optionnel : auto-refresh toutes les 30s
-      setInterval(fetchNotifications, 30000);
+      setInterval(fetchNotifications, 30000); // auto-refresh
     });
 
     const unreadCount = computed(() => notifications.value.length);
@@ -74,16 +103,15 @@ export default {
     const logout = () => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
-      window.location.href = "/login"; // ou this.$router.push si tu utilises Vue Router
+      window.location.href = "/login";
     };
 
-    return { notifications, showDropdown, toggleDropdown, unreadCount, logout };
+    return { notifications, showDropdown, toggleDropdown, unreadCount, logout, markAsRead, runAnalysis };
   }
 };
 </script>
 
 <style scoped>
-/* Ajustement du dropdown */
 .relative > .absolute {
   max-height: 300px;
   overflow-y: auto;

@@ -59,6 +59,7 @@ urlpatterns = [
     path('api/invoice/', views.create_invoice, name='create_invoice'),
     path('api/', include(router.urls)),
     path('api/notifications/', get_notifications, name='notifications'),
+    path('api/run-analysis/', views.run_analysis, name='run_analysis'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/user/', UserDetailView.as_view(), name='user_detail'),
@@ -67,5 +68,7 @@ urlpatterns = [
     path('api/current-user/', CurrentUserView.as_view(), name='current_user'),
     path('partner-autocomplete/', PartnerAutocomplete.as_view(), name='partner-autocomplete'),
     path("ai/", include("ai_assistant.urls")),
+    path('api/notifications/<int:pk>/mark-read/', views.mark_notification_read),
+
 ]
 
