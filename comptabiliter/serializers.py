@@ -6,7 +6,7 @@ from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem,
     Company, UserProfile, HistoriqueModification, User, Partner, Product, OrderItem, Order, Payment,
-    Invoice, Category, InvoiceItem
+    Invoice, Category, InvoiceItem, Notification
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -342,3 +342,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['id', 'payment_number', 'type', 'mode', 'description', 'date', 'amount', 'partner', 'pattern_id']
 
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'message', 'type', 'created_at', 'read']

@@ -1,8 +1,10 @@
 import io
 import logging
 import os
+from argparse import Action
 from datetime import datetime
 from django.conf import settings
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib import colors, logger
 from reportlab.lib.pagesizes import A4
@@ -16,13 +18,13 @@ from rest_framework import viewsets, filters, serializers, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 import json
 from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem, Partner,
     Company, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment, User, Category,
-    InvoiceItem
+    InvoiceItem, Notification
 )
 from .serializers import (
     CurrencySerializer, TaxSerializer, AccountTagSerializer, AccountSerializer,
@@ -201,20 +203,46 @@ class InvoiceViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["get"])
     def generate_pdf(self, request, pk=None):
         try:
+            # On récupère la commande
             order = Order.objects.get(pk=pk)
             items = OrderItem.objects.filter(order=order)
+            partner = order.partner
 
-            buffer = generate_invoice_pdf(order, [
+            # === 1️⃣ Vérifier si la facture existe déjà ===
+            invoice, created = Invoice.objects.get_or_create(
+                partner=partner,
+                invoice_number=f"INV-{order.id}",
+                defaults={
+                    "date": timezone.now().date(),
+                    "due_date": timezone.now().date() + timezone.timedelta(days=30),
+                    "amount": sum(i.quantity * i.product.unit_price for i in items),
+                    "status": "unpaid",
+                }
+            )
+
+            # === 2️⃣ Créer les lignes de facture si c’est une nouvelle facture ===
+            if created:
+                for i in items:
+                    InvoiceItem.objects.create(
+                        invoice=invoice,
+                        product_name=i.product.name,
+                        quantity=i.quantity,
+                        unit_price=i.product.unit_price
+                    )
+
+            # === 3️⃣ Générer le PDF ===
+            buffer = generate_invoice_pdf(invoice, [
                 {
-                    "name": i.product.name,
-                    "quantity": i.quantity,
-                    "unit_price": float(i.product.unit_price)
-                } for i in items
+                    "name": item.product_name,
+                    "quantity": item.quantity,
+                    "unit_price": float(item.unit_price)
+                } for item in invoice.items.all()
             ], logo_path="static/logo.png")
 
             response = HttpResponse(buffer, content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="facture_{order.id}.pdf"'
+            response["Content-Disposition"] = f'attachment; filename="facture_{invoice.invoice_number}.pdf"'
             return response
+
         except Order.DoesNotExist:
             return Response({"error": "Commande introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -231,7 +259,7 @@ class InvoiceItemViewSet(viewsets.ModelViewSet):
 # =========================
 @csrf_exempt
 def create_invoice(request):
-    """Version alternative pour créer une facture via POST sans passer par DRF."""
+    """Créer une facture et l'exporter en PDF"""
     if request.method != "POST":
         return JsonResponse({"error": "Method not allowed"}, status=405)
 
@@ -244,24 +272,43 @@ def create_invoice(request):
         items = OrderItem.objects.filter(order=order)
         partner = order.partner
 
-        if export_pdf:
-            buffer = generate_invoice_pdf(order, [
-                {
-                    "name": i.product.name,
-                    "quantity": i.quantity,
-                    "unit_price": float(i.product.unit_price)
-                } for i in items
-            ], logo_path=os.path.join(settings.BASE_DIR, "comptabiliter/static/logo.png"))
+        # === Création ou récupération de la facture ===
+        invoice, created = Invoice.objects.get_or_create(
+            partner=partner,
+            invoice_number=f"INV-{order.id}",
+            defaults={
+                "date": timezone.now().date(),
+                "due_date": timezone.now().date() + timezone.timedelta(days=30),
+                "amount": sum(i.quantity * i.product.unit_price for i in items),
+                "status": "unpaid",
+            }
+        )
 
+        # === Création des lignes si c'est une nouvelle facture ===
+        if created:
+            for i in items:
+                InvoiceItem.objects.create(
+                    invoice=invoice,
+                    product_name=i.product.name,
+                    quantity=i.quantity,
+                    unit_price=i.product.unit_price
+                )
+
+        if export_pdf:
+            # Passer l'objet Invoice à generate_invoice_pdf
+            buffer = generate_invoice_pdf(invoice)
             response = HttpResponse(buffer, content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="facture_{order.id}.pdf"'
+            response["Content-Disposition"] = f'attachment; filename="facture_{invoice.invoice_number}.pdf"'
             return response
         else:
+            # Retour JSON
             return JsonResponse({
-                "order_id": order.id,
+                "invoice_number": invoice.invoice_number,
+                "date": invoice.date.strftime('%d/%m/%Y'),
                 "client": partner.name,
-                "items": [{"product": i.product.name, "quantity": i.quantity} for i in items],
-                "total": sum([i.quantity * i.product.unit_price for i in items])
+                "items": [{"product": i.product_name, "quantity": i.quantity, "unit_price": float(i.unit_price)} for i in invoice.items.all()],
+                "total": float(invoice.amount),
+                "status": invoice.status
             })
 
     except Order.DoesNotExist:
@@ -275,42 +322,56 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # === FONCTION DE GÉNÉRATION PDF ===
-def generate_invoice_pdf(order, items, logo_path=None):
+def generate_invoice_pdf(invoice, items=None, logo_path=None):
+    """
+    Génère un PDF de facture à partir d'un objet Invoice.
+
+    :param invoice: Invoice instance
+    :param items: Optionnel, liste de dictionnaires {"name", "quantity", "unit_price"}.
+                  Si None, prend les InvoiceItem liés à la facture.
+    :param logo_path: Chemin du logo, sinon chemin par défaut
+    :return: io.BytesIO contenant le PDF
+    """
     if logo_path is None:
         logo_path = os.path.join(settings.BASE_DIR, "comptabiliter/static/logo.png")
-        print("Chemin logo:", logo_path)
-        print("Existe ?", os.path.exists(logo_path))
+
     buffer = io.BytesIO()
     p = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
+
+    # === LOGO ===
     logo_width = 4 * cm
     logo_height = 4 * cm
-    x = width - logo_width - 2*cm  # Décalage de 2 cm depuis le bord droit
-    y = height - logo_height - 2*cm
-    # === LOGO ===
+    x = width - logo_width - 2 * cm
+    y = height - logo_height - 2 * cm
+
     if logo_path and os.path.exists(logo_path):
-        logger.info(f"Logo exists, trying to draw: {logo_path}")
         try:
             p.drawImage(logo_path, x, y, width=logo_width, height=logo_height, preserveAspectRatio=True, mask='auto')
-            logger.info("Logo drawn successfully")
         except Exception as e:
-            logger.error(f"Error drawing logo: {e}")
+            logger.error(f"Erreur lors du dessin du logo : {e}")
     else:
-        logger.warning(f"Logo not found: {logo_path}")
+        logger.warning(f"Logo non trouvé : {logo_path}")
 
     # === TITRE ===
     p.setFont("Helvetica-Bold", 20)
-    p.drawCentredString(width/2, height-2*cm, "FACTURE")
+    p.drawCentredString(width / 2, height - 2 * cm, "FACTURE")
 
-    # === INFOS COMMANDE ===
+    # === INFOS FACTURE ===
     p.setFont("Helvetica", 12)
-    y_info = height - 5*cm
-    p.drawString(2*cm, y_info, f"Commande n° : {order.id}")
-    p.drawString(2*cm, y_info-1*cm, f"Client : {order.partner.name}")
-    p.drawString(2*cm, y_info-2*cm, f"Date : {order.date.strftime('%d/%m/%Y')}")
-    p.drawString(2*cm, y_info-3*cm, f"État : {order.status}")
+    y_info = height - 5 * cm
+    p.drawString(2 * cm, y_info, f"Facture n° : {invoice.invoice_number}")
+    p.drawString(2 * cm, y_info - 1 * cm, f"Client : {invoice.partner.name}")
+    p.drawString(2 * cm, y_info - 2 * cm, f"Date : {invoice.date.strftime('%d/%m/%Y')}")
+    p.drawString(2 * cm, y_info - 3 * cm, f"État : {invoice.status}")
 
     # === TABLEAU DES PRODUITS ===
+    if items is None:
+        items = [
+            {"name": i.product_name, "quantity": i.quantity, "unit_price": float(i.unit_price)}
+            for i in invoice.items.all()
+        ]
+
     table_data = [["Produit", "Quantité", "Prix unitaire", "Total"]]
     total_general = 0
     for item in items:
@@ -322,34 +383,37 @@ def generate_invoice_pdf(order, items, logo_path=None):
             f"{item['unit_price']:.2f}",
             f"{total_ligne:.2f}"
         ])
-    payments = Payment.objects.filter(pattern=order.partner, date__lte=order.date)
+
+    # === PAIEMENTS ===
+    payments = Payment.objects.filter(pattern=invoice.partner, date__lte=invoice.date)
     total_paid = sum(p.amount for p in payments)
-    reste_a_payer = order.total_amount - total_paid
-    table_data.append(["", "", "TOTAL", f"{total_general:.2f} ar"])
-    table_data.append(["", "", "Total payé", f"{total_paid:.2f} ar"])
-    table_data.append(["", "", "Reste à payer", f"{reste_a_payer:.2f} ar"])
-    table = Table(table_data, colWidths=[7*cm, 3*cm, 3*cm, 3*cm])
+    reste_a_payer = invoice.amount - total_paid
+
+    table_data.append(["", "", "TOTAL", f"{total_general:.2f}"])
+    table_data.append(["", "", "Total payé", f"{total_paid:.2f}"])
+    table_data.append(["", "", "Reste à payer", f"{reste_a_payer:.2f}"])
+
+    table = Table(table_data, colWidths=[7 * cm, 3 * cm, 3 * cm, 3 * cm])
     style = TableStyle([
-        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
-        ("TEXTCOLOR", (0,0), (-1,0), colors.black),
-        ("ALIGN", (1,1), (-1,-1), "CENTER"),
-        ("GRID", (0,0), (-1,-1), 0.5, colors.black),
-        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
-        ("BOTTOMPADDING", (0,0), (-1,0), 8),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.black),
+        ("ALIGN", (1, 1), (-1, -1), "CENTER"),
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.black),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 8),
     ])
     table.setStyle(style)
     table.wrapOn(p, width, height)
-    table.drawOn(p, 2*cm, y_info-8*cm)
+    table.drawOn(p, 2 * cm, y_info - 8 * cm)
 
     # === PIED DE PAGE ===
     p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width/2, 1.5*cm, "Merci pour votre achat ✨")
+    p.drawCentredString(width / 2, 1.5 * cm, "Merci pour votre achat ✨")
 
     p.showPage()
     p.save()
     buffer.seek(0)
     return buffer
-
 # === VUE DJANGO POUR RENVOYER LE PDF ===
 def invoice_view(request, order_id):
     order = Order.objects.get(id=order_id)
@@ -829,3 +893,36 @@ class TrialBalanceByTypeView(APIView):
             "grand_total_credit_solde": grand_total_credit_solde,
             "is_balanced": grand_total_debit_total == grand_total_credit_total,
         })
+
+def create_notifications_for_user(user):
+    # Exemple d’analyse simple
+    journals = Journal.objects.all()
+    refs = [j.reference for j in journals]
+    duplicates = [ref for ref in set(refs) if refs.count(ref) > 1]
+
+    if duplicates:
+        Notification.objects.create(
+            user=user,
+            message=f"Journaux en doublon : {', '.join(duplicates)}",
+            type='warning'
+        )
+
+    actions_without_journal = Action.objects.filter(journal__isnull=True)
+    if actions_without_journal.exists():
+        names = ', '.join([a.name for a in actions_without_journal])
+        Notification.objects.create(
+            user=user,
+            message=f"Actions sans journal : {names}",
+            type='error'
+        )
+@api_view(['GET'])
+def get_notifications(request):
+    user = request.user
+    notifications = Notification.objects.filter(user=user, read=False).order_by('-created_at')
+    data = [{
+        'id': n.id,
+        'message': n.message,
+        'type': n.type,
+        'created_at': n.created_at
+    } for n in notifications]
+    return Response(data)

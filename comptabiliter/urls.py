@@ -28,7 +28,7 @@ from .views import (
     CompanyViewSet, UserViewSet, TrialBalanceByTypeView, GeneralLedgerView,
     UserDetailView, CompteComptableViewSet, PartnerViewSet,
     CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet,
-    InvoiceViewSet, CategoryViewSet, InvoiceItemViewSet  # Ajout de CurrentUserView
+    InvoiceViewSet, CategoryViewSet, InvoiceItemViewSet,get_notifications  # Ajout de CurrentUserView
 )
 from django.contrib import admin
 
@@ -52,11 +52,13 @@ router.register(r'users', UserViewSet)
 router.register(r'partners', PartnerViewSet)
 router.register(r'invoices', InvoiceViewSet)
 router.register(r'invoice-items', InvoiceItemViewSet)
+
 urlpatterns = [
     path('', RedirectView.as_view(url='http://localhost:5173/', permanent=False)),
     path('admin/', admin.site.urls),
     path('api/invoice/', views.create_invoice, name='create_invoice'),
     path('api/', include(router.urls)),
+    path('api/notifications/', get_notifications, name='notifications'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/user/', UserDetailView.as_view(), name='user_detail'),
