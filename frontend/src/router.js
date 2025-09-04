@@ -13,6 +13,7 @@ import Index from './components/index.vue';
 import User from './components/User.vue';
 import Paramettre from './components/Parametre.vue'
 import produit from './components/ProductView.vue'
+import invoice from './components/InvoiceClient.vue'
 
 
 const routes = [
@@ -37,7 +38,8 @@ const routes = [
       { path: 'commande&payment', name: 'CommandePayment', component: CommandePayment },
       { path: 'balance', name: 'Balance', component: Balance },
       { path: 'livre', name: 'Livre', component: Livre },
-      { path: '', name: 'Index', component: Index }, // page principale
+      { path: '', name: 'Index', component: Index },
+      {path: 'invoice', name: 'invoice', component:invoice},
     ]
   }
 ];

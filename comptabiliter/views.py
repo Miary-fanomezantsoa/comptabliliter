@@ -1,8 +1,18 @@
+import io
+import logging
+import os
 from datetime import datetime
-
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from reportlab.lib import colors, logger
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from reportlab.pdfgen import canvas
 from dal import autocomplete
 from django.db.models import Sum, Max
-from rest_framework import viewsets, filters, serializers
+from django.http import HttpResponse, JsonResponse
+from reportlab.platypus import Table, TableStyle
+from rest_framework import viewsets, filters, serializers, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -11,17 +21,16 @@ import json
 from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem, Partner,
-    Company, UserProfile, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment, User, Category
+    Company, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment, User, Category,
+    InvoiceItem
 )
 from .serializers import (
     CurrencySerializer, TaxSerializer, AccountTagSerializer, AccountSerializer,
     JournalSerializer, JournalEntrySerializer, JournalItemSerializer, PartnerSerializer,
-    CompanySerializer, UserProfileSerializer, UserSerializer, CompteComptableSerializer,
+    CompanySerializer, UserSerializer,
     HistoriqueModificationSerializer, SafeUserSerializer, PaymentSerializer, OrderItemSerializer, OrderSerializer,
-    InvoiceSerializer, ProductSerializer, CategorySerializer
+    InvoiceSerializer, ProductSerializer, CategorySerializer, InvoiceItemSerializer
 )
-from .utils.accounting import get_or_create_account
-
 
 #devise
 class CurrencyViewSet(viewsets.ModelViewSet):
@@ -175,19 +184,183 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
-
 # factures
 class InvoiceViewSet(viewsets.ModelViewSet):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
 
-    # exemple : filtrer par partenaire
+    # Filtrer par client (partner)
     def get_queryset(self):
         queryset = super().get_queryset()
-        partner_id = self.request.query_params.get('partner')
+        partner_id = self.request.query_params.get("partner")
         if partner_id:
             queryset = queryset.filter(partner_id=partner_id)
         return queryset
+
+    # ✅ Endpoint personnalisé : /api/invoice/{id}/generate_pdf/
+    @action(detail=True, methods=["get"])
+    def generate_pdf(self, request, pk=None):
+        try:
+            order = Order.objects.get(pk=pk)
+            items = OrderItem.objects.filter(order=order)
+
+            buffer = generate_invoice_pdf(order, [
+                {
+                    "name": i.product.name,
+                    "quantity": i.quantity,
+                    "unit_price": float(i.product.unit_price)
+                } for i in items
+            ], logo_path="static/logo.png")
+
+            response = HttpResponse(buffer, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="facture_{order.id}.pdf"'
+            return response
+        except Order.DoesNotExist:
+            return Response({"error": "Commande introuvable"}, status=status.HTTP_404_NOT_FOUND)
+
+# =========================
+#   VIEWSET DES LIGNES DE FACTURES
+# =========================
+class InvoiceItemViewSet(viewsets.ModelViewSet):
+    queryset = InvoiceItem.objects.all()
+    serializer_class = InvoiceItemSerializer
+
+
+# =========================
+#   VIEW CLASSIQUE (optionnelle)
+# =========================
+@csrf_exempt
+def create_invoice(request):
+    """Version alternative pour créer une facture via POST sans passer par DRF."""
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    data = json.loads(request.body)
+    order_id = data.get("order_id")
+    export_pdf = data.get("export_pdf", False)
+
+    try:
+        order = Order.objects.get(id=order_id)
+        items = OrderItem.objects.filter(order=order)
+        partner = order.partner
+
+        if export_pdf:
+            buffer = generate_invoice_pdf(order, [
+                {
+                    "name": i.product.name,
+                    "quantity": i.quantity,
+                    "unit_price": float(i.product.unit_price)
+                } for i in items
+            ], logo_path=os.path.join(settings.BASE_DIR, "comptabiliter/static/logo.png"))
+
+            response = HttpResponse(buffer, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="facture_{order.id}.pdf"'
+            return response
+        else:
+            return JsonResponse({
+                "order_id": order.id,
+                "client": partner.name,
+                "items": [{"product": i.product.name, "quantity": i.quantity} for i in items],
+                "total": sum([i.quantity * i.product.unit_price for i in items])
+            })
+
+    except Order.DoesNotExist:
+        return JsonResponse({"error": "Order not found"}, status=404)
+
+# =========================
+#   FONCTION DE GÉNÉRATION PDF
+# =========================
+# === CONFIG LOGGING ===
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# === FONCTION DE GÉNÉRATION PDF ===
+def generate_invoice_pdf(order, items, logo_path=None):
+    if logo_path is None:
+        logo_path = os.path.join(settings.BASE_DIR, "comptabiliter/static/logo.png")
+        print("Chemin logo:", logo_path)
+        print("Existe ?", os.path.exists(logo_path))
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    logo_width = 4 * cm
+    logo_height = 4 * cm
+    x = width - logo_width - 2*cm  # Décalage de 2 cm depuis le bord droit
+    y = height - logo_height - 2*cm
+    # === LOGO ===
+    if logo_path and os.path.exists(logo_path):
+        logger.info(f"Logo exists, trying to draw: {logo_path}")
+        try:
+            p.drawImage(logo_path, x, y, width=logo_width, height=logo_height, preserveAspectRatio=True, mask='auto')
+            logger.info("Logo drawn successfully")
+        except Exception as e:
+            logger.error(f"Error drawing logo: {e}")
+    else:
+        logger.warning(f"Logo not found: {logo_path}")
+
+    # === TITRE ===
+    p.setFont("Helvetica-Bold", 20)
+    p.drawCentredString(width/2, height-2*cm, "FACTURE")
+
+    # === INFOS COMMANDE ===
+    p.setFont("Helvetica", 12)
+    y_info = height - 5*cm
+    p.drawString(2*cm, y_info, f"Commande n° : {order.id}")
+    p.drawString(2*cm, y_info-1*cm, f"Client : {order.partner.name}")
+    p.drawString(2*cm, y_info-2*cm, f"Date : {order.date.strftime('%d/%m/%Y')}")
+    p.drawString(2*cm, y_info-3*cm, f"État : {order.status}")
+
+    # === TABLEAU DES PRODUITS ===
+    table_data = [["Produit", "Quantité", "Prix unitaire", "Total"]]
+    total_general = 0
+    for item in items:
+        total_ligne = item["quantity"] * item["unit_price"]
+        total_general += total_ligne
+        table_data.append([
+            item["name"],
+            str(item["quantity"]),
+            f"{item['unit_price']:.2f}",
+            f"{total_ligne:.2f}"
+        ])
+    payments = Payment.objects.filter(pattern=order.partner, date__lte=order.date)
+    total_paid = sum(p.amount for p in payments)
+    reste_a_payer = order.total_amount - total_paid
+    table_data.append(["", "", "TOTAL", f"{total_general:.2f} ar"])
+    table_data.append(["", "", "Total payé", f"{total_paid:.2f} ar"])
+    table_data.append(["", "", "Reste à payer", f"{reste_a_payer:.2f} ar"])
+    table = Table(table_data, colWidths=[7*cm, 3*cm, 3*cm, 3*cm])
+    style = TableStyle([
+        ("BACKGROUND", (0,0), (-1,0), colors.lightgrey),
+        ("TEXTCOLOR", (0,0), (-1,0), colors.black),
+        ("ALIGN", (1,1), (-1,-1), "CENTER"),
+        ("GRID", (0,0), (-1,-1), 0.5, colors.black),
+        ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0,0), (-1,0), 8),
+    ])
+    table.setStyle(style)
+    table.wrapOn(p, width, height)
+    table.drawOn(p, 2*cm, y_info-8*cm)
+
+    # === PIED DE PAGE ===
+    p.setFont("Helvetica-Oblique", 10)
+    p.drawCentredString(width/2, 1.5*cm, "Merci pour votre achat ✨")
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    return buffer
+
+# === VUE DJANGO POUR RENVOYER LE PDF ===
+def invoice_view(request, order_id):
+    order = Order.objects.get(id=order_id)
+    items = [
+        {"name": i.product.name, "quantity": i.quantity, "unit_price": i.unit_price}
+        for i in order.items.all()
+    ]
+    pdf_buffer = generate_invoice_pdf(order, items)
+    response = HttpResponse(pdf_buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="facture_{order.id}.pdf"'
+    return response
 
 
 # commandes

@@ -6,7 +6,7 @@ from .models import (
     Currency, Tax, AccountTag, Account,
     Journal, JournalEntry, JournalItem,
     Company, UserProfile, HistoriqueModification, User, Partner, Product, OrderItem, Order, Payment,
-    Invoice, Category
+    Invoice, Category, InvoiceItem
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -240,11 +240,22 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 # ==== Invoice ====
+class InvoiceItemSerializer(serializers.ModelSerializer):
+    total_price = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = InvoiceItem
+        fields = ['id', 'product_name', 'quantity', 'unit_price', 'total_price']
+
+    def get_total_price(self, obj):
+        return obj.quantity * obj.unit_price
+
+
 class InvoiceSerializer(serializers.ModelSerializer):
     partner = serializers.StringRelatedField(read_only=True)
     partner_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(),
-        source='partner',
+        source='partner',  # map l’écriture vers le champ 'patern'
         write_only=True
     )
     tax = serializers.StringRelatedField(read_only=True)
@@ -255,11 +266,14 @@ class InvoiceSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True
     )
+    items = InvoiceItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Invoice
-        fields = ['id', 'invoice_number', 'date', 'amount', 'status', 'tax', 'tax_id', 'partner', 'partner_id']
-
+        fields = [
+            'id', 'invoice_number', 'date', 'due_date', 'amount', 'status',
+            'tax', 'tax_id', 'partner', 'partner_id','items'
+        ]
 
 # ==== Order ====
 class OrderSerializer(serializers.ModelSerializer):

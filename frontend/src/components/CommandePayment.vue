@@ -5,10 +5,6 @@
       <!-- Header commandes -->
       <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h2 class="text-3xl font-bold text-orange-900">Commandes</h2>
-        <button @click="addNewItemLine"
-                class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition">
-          ➕ Nouvelle commande
-        </button>
       </div>
 
       <!-- Liste des commandes -->
@@ -56,6 +52,17 @@
             </tbody>
           </table>
         </div>
+        <!-- Facturation -->
+<div class="flex items-center gap-4 mt-4">
+  <button @click="createInvoice"
+          class="bg-green-600 text-white rounded px-4 py-2 hover:bg-green-700 transition">
+    🧾 Facturer
+  </button>
+  <label class="flex items-center gap-2 text-gray-700">
+    <input type="checkbox" v-model="exportPDF" class="w-4 h-4"/>
+    Exporter en PDF
+  </label>
+</div>
 
         <!-- Paiements -->
         <div v-if="payments.length">
@@ -152,6 +159,7 @@ export default {
   data() {
     return {
       orders: [],
+      exportPDF: false,
       selectedOrder: null,
       orderItems: [],
       payments: [],
@@ -198,7 +206,7 @@ selectedOrderTotal() {
     return sum;
   },
 
-  // Total payé pour la commande sélectionnée
+  // Total payé pour la commande sélectionnéeconst res = await api.post('/api/invoice/', payload);
   selectedOrderPaid() {
     return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   },
@@ -362,7 +370,40 @@ async addPayment() {
 
     console.log("selectedOrder complet:", this.selectedOrder);
   },
+async createInvoice() {
+    if (!this.selectedOrder) return;
 
+    const payload = {
+      order_id: this.selectedOrder.id,
+      export_pdf: this.exportPDF
+    };
+
+    try {
+      const res = await api.post('/api/invoice/', payload, {
+        responseType: this.exportPDF ? 'blob' : 'json' // pour le PDF
+      });
+
+      if (this.exportPDF) {
+        // Télécharger le PDF
+        const blob = new Blob([res.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `facture_${this.selectedOrder.id}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } else {
+        alert("Facture générée !");
+        console.log(res.data); // objet JSON retourné par le backend
+      }
+
+    } catch (error) {
+      console.error("Erreur création facture :", error.response?.data || error);
+      alert("Erreur lors de la facturation.");
+    }
+  }
 
 
 

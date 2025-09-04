@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from dal import autocomplete
 from .models import (
     User, Currency, Tax, AccountTag, Account, Journal, JournalEntry, JournalItem,
-    Company, UserProfile, Partner, Order, OrderItem, Product, Category, Payment
+    Company, UserProfile, Partner, Order, OrderItem, Product, Category, Payment,Invoice, InvoiceItem
 )
 class MyAdmin(admin.ModelAdmin):
     class Media:
@@ -28,6 +28,28 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'email')
 
 admin.site.register(User, UserAdmin)
+
+
+class InvoiceItemInline(admin.TabularInline):  # ou admin.StackedInline si tu veux en blocs
+    model = InvoiceItem
+    extra = 1  # nombre de lignes vides par défaut
+    readonly_fields = ('total_price',)  # affichage du total en lecture seule
+
+# Personnalisation de l’affichage des factures
+@admin.register(Invoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = ('invoice_number', 'partner', 'date', 'due_date', 'amount', 'status', 'tax')
+    list_filter = ('status', 'date', 'due_date', 'partner')
+    search_fields = ('invoice_number', 'partner__name')
+    inlines = [InvoiceItemInline]
+
+# Pour gérer les items seuls (optionnel)
+@admin.register(InvoiceItem)
+class InvoiceItemAdmin(admin.ModelAdmin):
+    list_display = ('product_name', 'invoice', 'quantity', 'unit_price', 'total_price')
+    search_fields = ('product_name', 'invoice__invoice_number')
+    list_filter = ('invoice',)
+
 
 
 # ==== Currency Admin ====

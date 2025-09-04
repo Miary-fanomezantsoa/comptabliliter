@@ -55,6 +55,7 @@ export default {
         { to: "/livre", label: "Livre comptable", icon: "📚", iconIsImg: false },
         { to: "/User", label: "Gérer les utilisateurs", icon: "👤", iconIsImg: false },
         { to: "/produit", label: "Produits", icon:"🍫 ", iconIsImg: false },
+        { to: "/invoice", label: "invoice", icon:"🧾"},
         { to: "/Paramettre", label: "Paramètres", icon: paramIcon, iconIsImg: true }
       ],
     };

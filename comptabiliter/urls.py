@@ -19,6 +19,8 @@ from django.views.generic import RedirectView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+
+from . import views
 from .admin import PartnerAutocomplete
 from .views import (
     CurrencyViewSet, TaxViewSet, AccountTagViewSet,  # Suppression de AccountViewSet
@@ -26,7 +28,7 @@ from .views import (
     CompanyViewSet, UserViewSet, TrialBalanceByTypeView, GeneralLedgerView,
     UserDetailView, CompteComptableViewSet, PartnerViewSet,
     CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet,
-    InvoiceViewSet, CategoryViewSet  # Ajout de CurrentUserView
+    InvoiceViewSet, CategoryViewSet, InvoiceItemViewSet  # Ajout de CurrentUserView
 )
 from django.contrib import admin
 
@@ -49,9 +51,11 @@ router.register(r'companies', CompanyViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'partners', PartnerViewSet)
 router.register(r'invoices', InvoiceViewSet)
+router.register(r'invoice-items', InvoiceItemViewSet)
 urlpatterns = [
     path('', RedirectView.as_view(url='http://localhost:5173/', permanent=False)),
     path('admin/', admin.site.urls),
+    path('api/invoice/', views.create_invoice, name='create_invoice'),
     path('api/', include(router.urls)),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
