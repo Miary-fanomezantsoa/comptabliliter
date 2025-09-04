@@ -60,7 +60,7 @@ export default {
     return {
       username: '',
       password: '',
-      showPassword: false, // <-- pour l’œil
+      showPassword: false,
       error: null,
       loading: false,
     }

@@ -16,13 +16,13 @@
 </template>
 
 <script>
-import { askGemini } from "../axios"; // ton fichier api modifié
+import { askGemini } from "../axios";
 
 export default {
   data() {
     return {
       input: "",
-      messages: [], // { sender: "Vous" | "Gemini", text: "..."}
+      messages: [],
     };
   },
   methods: {

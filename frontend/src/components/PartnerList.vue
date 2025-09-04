@@ -90,12 +90,12 @@ export default {
     const q = this.searchQuery.toLowerCase();
 
     return this.partners.filter(p => {
-      const companyName = p.company?.name || ''; // <-- protection ici
+      const companyName = p.company?.name || '';
       return (
-        String(p.id).includes(q) ||          // recherche par ID
-        p.name.toLowerCase().includes(q) ||  // recherche par nom
+        String(p.id).includes(q) ||
+        p.name.toLowerCase().includes(q) ||
         (p.email && p.email.toLowerCase().includes(q)) ||
-        companyName.toLowerCase().includes(q) // recherche par entreprise
+        companyName.toLowerCase().includes(q)
       );
     });
   }
@@ -123,11 +123,10 @@ export default {
     },
 
     goToCreate() {
-      this.$router.push({ name: 'Partners' }); // route de création
+      this.$router.push({ name: 'Partners' });
     },
 
    goToEdit(id) {
-  // redirige vers le formulaire de création/modification avec le paramètre partnerId
   this.$router.push({ name: 'Partners', params: { partnerId: id } });
 },
 

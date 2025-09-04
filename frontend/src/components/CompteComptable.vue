@@ -252,9 +252,9 @@ form: {
         compte: '',
         sous_compte: ''
     },
-    currencies: [],  // liste des devises depuis l'API
-    taxes: [],       // liste des taxes depuis l'API
-    tags: [],        // liste des tags depuis l'API
+    currencies: [],
+    taxes: [],
+    tags: [],
     partners: [],
     modalVisible: false,
       ecritureModalVisible: false,
@@ -307,7 +307,6 @@ form: {
       this.form.sous_compte = '';
     },
     onSousCompteChange() {
-      // Quand l’utilisateur choisit le sous-compte final → remplir automatiquement code + name
       const sousCompte = this.sousComptesDisponibles.find(s => s.number === this.form.sous_compte);
       if (sousCompte) {
         this.form.code = sousCompte.number;
@@ -424,15 +423,13 @@ async deleteCompte(id) {
   try {
     console.log("Code:", this.form.code, "Name:", this.form.name, "Type:", this.form.account_type);
 
-    // Vérifie que les champs obligatoires sont remplis
     if (!this.form.code || !this.form.name || !this.form.account_type) {
       alert("Veuillez remplir tous les champs obligatoires !");
       return;
     }
 
-    // Prépare le payload complet
     const payload = {
-      code: this.form.code,                // <-- ajouté
+      code: this.form.code,
       name: this.form.name,
       account_type: this.form.account_type,
       currency: this.form.currency || null,
@@ -441,20 +438,18 @@ async deleteCompte(id) {
       taxes: Array.isArray(this.form.taxes) ? this.form.taxes : [],
       tags: Array.isArray(this.form.tags) ? this.form.tags : [],
       partner: this.form.partner || null,
-      classe: this.form.classe || null,        // <-- ajouté
-      sous_classe: this.form.sous_classe || null, // <-- ajouté
-      compte: this.form.compte || null,        // <-- ajouté
-      sous_compte: this.form.sous_compte || null // <-- ajouté
+      classe: this.form.classe || null,
+      sous_classe: this.form.sous_classe || null,
+      compte: this.form.compte || null,
+      sous_compte: this.form.sous_compte || null
     };
 
-    // POST ou PUT selon si l'objet existe
     if (this.form.id) {
       await api.put(`/api/comptes/${this.form.id}/`, payload);
     } else {
       await api.post('/api/comptes/', payload);
     }
 
-    // Rafraîchit la liste et ferme le modal
     await this.fetchComptes();
     this.closeModal();
 
@@ -480,7 +475,7 @@ async deleteCompte(id) {
   },
   mounted() {
     this.fetchComptes();
-    this.fetchSelects(); // charge toutes les listes
+    this.fetchSelects();
   }
 }
 </script>

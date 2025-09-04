@@ -60,7 +60,7 @@
 </template>
 
 <script>
-import api from '../axios'; // ton axios configuré
+import api from '../axios';
 
 export default {
   data() {
@@ -107,7 +107,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-/* Scroll si nécessaire */
-</style>

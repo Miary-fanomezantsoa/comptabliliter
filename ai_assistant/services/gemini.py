@@ -2,26 +2,34 @@ import os
 import google.generativeai as genai
 
 # Config API
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# Utilise un modèle valide
-model = genai.GenerativeModel("gemini-1.5-flash")
-
-def ask_gemini(prompt: str) -> str:
-    """Envoie une requête à Gemini et retourne la réponse"""
+def ask_gemini(user, prompt: str, notif_type="info") -> str:
     try:
         response = model.generate_content(prompt)
 
-        # Retourne directement le texte simplifié
+        suggestion = ""
         if response and hasattr(response, "text"):
-            return response.text.strip()
+            suggestion = response.text.strip()
+        elif response and response.candidates:
+            # concatène les réponses candidates si disponibles
+            suggestion = " ".join([c.text for c in response.candidates if hasattr(c, "text")])
+        else:
+            suggestion = "Desolé nous avons pas de suggestion pour ce type de probleme"
 
-        # Sinon, parcours les candidates manuellement
-        if response and response.candidates:
-            return response.candidates[0].content.parts[0].text.strip()
+        # Crée une notification pour l'utilisateur
+        Notification.objects.create(
+            user=user,
+            message=f"💡 Suggestion IA : {suggestion}",
+            type=notif_type
+        )
 
-        return "aucune correspondance trouvée."
+        return suggestion
 
     except Exception as e:
-        return f"Erreur: {e}"
+        err_msg = f"Erreur IA : {e}"
+        Notification.objects.create(
+            user=user,
+            message=err_msg,
+            type='error'
+        )
+        return err_msg
 

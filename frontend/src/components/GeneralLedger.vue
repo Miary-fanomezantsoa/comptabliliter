@@ -77,7 +77,6 @@ export default {
 </script>
 
 <style scoped>
-/* Scroll horizontal pour grandes tables */
 table {
   border-collapse: collapse;
 }

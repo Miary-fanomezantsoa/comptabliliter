@@ -4,7 +4,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from dal import autocomplete
 from .models import (
     User, Currency, Tax, AccountTag, Account, Journal, JournalEntry, JournalItem,
-    Company, UserProfile, Partner, Order, OrderItem, Product, Category, Payment,Invoice, InvoiceItem
+    Company, Partner, Order, OrderItem, Product, Category, Payment,Invoice, InvoiceItem
 )
 class MyAdmin(admin.ModelAdmin):
     class Media:
@@ -30,10 +30,10 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(User, UserAdmin)
 
 
-class InvoiceItemInline(admin.TabularInline):  # ou admin.StackedInline si tu veux en blocs
+class InvoiceItemInline(admin.TabularInline):
     model = InvoiceItem
-    extra = 1  # nombre de lignes vides par défaut
-    readonly_fields = ('total_price',)  # affichage du total en lecture seule
+    extra = 1
+    readonly_fields = ('total_price',)
 
 # Personnalisation de l’affichage des factures
 @admin.register(Invoice)
@@ -43,7 +43,7 @@ class InvoiceAdmin(admin.ModelAdmin):
     search_fields = ('invoice_number', 'partner__name')
     inlines = [InvoiceItemInline]
 
-# Pour gérer les items seuls (optionnel)
+# Pour gérer les items seuls
 @admin.register(InvoiceItem)
 class InvoiceItemAdmin(admin.ModelAdmin):
     list_display = ('product_name', 'invoice', 'quantity', 'unit_price', 'total_price')
@@ -88,7 +88,7 @@ class AccountForm(forms.ModelForm):
     class Meta:
         model = Account
         fields = "__all__"
-        js = ('comptabiliter/js/partner_currency.js',)  # ton fichier JS
+        js = ('comptabiliter/js/partner_currency.js',)
         widgets = {
             'partner': autocomplete.ModelSelect2(url='partner-autocomplete',forward=['account_type']), 'currency':forms.Select(),
         }
@@ -155,7 +155,6 @@ class OrderAdmin(admin.ModelAdmin):
     autocomplete_fields = ('partner',)
     ordering = ('-date',)
 
-# Optionnel : si tu veux un admin séparé pour les lignes de commande
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
     list_display = ('order', 'product', 'quantity')

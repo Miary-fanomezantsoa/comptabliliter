@@ -10,14 +10,3 @@
     </p>
   </footer>
 </template>
-
-<script setup>
-// Footer statique, pas besoin de script
-</script>
-
-<style scoped>
-/* Si tu veux ajouter un effet de transition sur les liens */
-a {
-  transition: color 0.3s;
-}
-</style>

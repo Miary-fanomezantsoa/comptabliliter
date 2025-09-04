@@ -37,8 +37,6 @@ class SafeUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'role']
-        # exclure explicitement tout ce qui peut poser problème
-        # (relations ManyToMany implicites)
         extra_kwargs = {
             'groups': {'read_only': True},
             'user_permissions': {'read_only': True}
@@ -92,7 +90,7 @@ class AccountSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             "sous_classe": {"required": False, "allow_null": True},
-            "compte": {"required": False, "allow_null": True},  # ⚠️ ton extra_kwargs contenait "compte_parent" qui n'existe pas
+            "compte": {"required": False, "allow_null": True},
             "sous_compte": {"required": False, "allow_null": True},
         }
 
@@ -139,7 +137,7 @@ class JournalItemSerializer(serializers.ModelSerializer):
     currency = CurrencySerializer(read_only=True)
     entry = serializers.PrimaryKeyRelatedField(read_only=True)
 
-    # Écriture : on fournit juste les IDs
+    # Écriture
     account_id = serializers.PrimaryKeyRelatedField(
         queryset=Account.objects.all(),
         source='account',
@@ -174,7 +172,7 @@ class JournalEntrySerializer(serializers.ModelSerializer):
     journal = JournalSerializer(read_only=True)
     items = JournalItemSerializer(source='lines', many=True, read_only=True)
 
-    # Écriture : fournir juste les IDs
+    # Écriture
     journal_id = serializers.PrimaryKeyRelatedField(
         queryset=Journal.objects.all(),
         source='journal',
@@ -203,7 +201,6 @@ class JournalEntrySerializer(serializers.ModelSerializer):
         return journal_entry
 
     def update(self, instance, validated_data):
-        # Mise à jour simple des champs principaux
         instance.journal = validated_data.get('journal', instance.journal)
         instance.date = validated_data.get('date', instance.date)
         instance.reference = validated_data.get('reference', instance.reference)
@@ -255,7 +252,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
     partner = serializers.StringRelatedField(read_only=True)
     partner_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(),
-        source='partner',  # map l’écriture vers le champ 'patern'
+        source='partner',
         write_only=True
     )
     tax = serializers.StringRelatedField(read_only=True)
@@ -295,9 +292,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-
-
-        # Ajouter date par défaut si nécessaire
         if 'date' not in validated_data:
             validated_data['date'] = timezone.now().date()
 

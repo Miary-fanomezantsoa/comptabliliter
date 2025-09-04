@@ -8,7 +8,7 @@ const form = ref({
   id: null,
   username: '',
   email: '',
-  currentPassword: '', // pour modifier
+  currentPassword: '',
   password: '',
   confirmPassword: '',
   role: 'comptable'
@@ -17,7 +17,6 @@ const form = ref({
 const isEditing = ref(false)
 const showPassword = ref(false)
 
-// Récupérer les utilisateurs
 const fetchUsers = async () => {
   try {
     const res = await api.get('http://localhost:8000/api/users/')
@@ -27,14 +26,12 @@ const fetchUsers = async () => {
   }
 }
 
-// Créer ou éditer un utilisateur
 const saveUser = async () => {
   if (form.value.password !== form.value.confirmPassword) {
     alert("Les mots de passe ne correspondent pas !")
     return
   }
 
-  // Si on édite, vérifier que le mot de passe actuel est saisi
   if (isEditing.value && !form.value.currentPassword) {
     alert("Veuillez saisir le mot de passe actuel pour modifier l'utilisateur.")
     return
@@ -55,13 +52,11 @@ const saveUser = async () => {
   }
 }
 
-// Préparer l'édition
 const editUser = (user) => {
   form.value = { ...user, password: '', confirmPassword: '', currentPassword: '' }
   isEditing.value = true
 }
 
-// Supprimer un utilisateur
 const deleteUser = async (id) => {
   try {
     await api.delete(`http://localhost:8000/api/users/${id}/`)
@@ -71,7 +66,6 @@ const deleteUser = async (id) => {
   }
 }
 
-// Réinitialiser le formulaire
 const resetForm = () => {
   form.value = { id: null, username: '', email: '', currentPassword: '', password: '', confirmPassword: '', role: 'comptable' }
   isEditing.value = false

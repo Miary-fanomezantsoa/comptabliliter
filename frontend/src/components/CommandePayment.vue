@@ -224,8 +224,8 @@ selectedOrderTotal() {
   allowedStatuses(currentStatus) {
     const orderFlow = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
     const currentIndex = orderFlow.indexOf(currentStatus);
-    if (currentIndex === -1) return orderFlow; // fallback
-    return orderFlow.slice(currentIndex); // uniquement les statuts à partir du statut actuel
+    if (currentIndex === -1) return orderFlow;
+    return orderFlow.slice(currentIndex);
   },
 
   statusLabel(status) {
@@ -380,7 +380,7 @@ async createInvoice() {
 
     try {
       const res = await api.post('/api/invoice/', payload, {
-        responseType: this.exportPDF ? 'blob' : 'json' // pour le PDF
+        responseType: this.exportPDF ? 'blob' : 'json'
       });
 
       if (this.exportPDF) {
@@ -396,7 +396,7 @@ async createInvoice() {
         window.URL.revokeObjectURL(url);
       } else {
         alert("Facture générée !");
-        console.log(res.data); // objet JSON retourné par le backend
+        console.log(res.data);
       }
 
     } catch (error) {

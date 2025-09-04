@@ -156,20 +156,17 @@ export default {
         company: null,
       },
       companies: [],
-      currencies: [], // <-- manquait ici
+      currencies: [],
     };
   },
   async created() {
     try {
-      // Charger les entreprises existantes
       const res = await api.get("/api/companies/");
       this.companies = res.data;
 
-      // Charger les devises existantes
       const curRes = await api.get("/api/currencies/");
       this.currencies = curRes.data;
 
-      // Si partenaire à modifier
       const partnerId = this.$route.params.partnerId;
       if (partnerId) {
         const partnerRes = await api.get(`/api/partners/${partnerId}/`);
@@ -188,7 +185,6 @@ export default {
     async createPartner(mode) {
       let companyId = this.selectedCompany;
 
-      // Cas où on crée une nouvelle entreprise
       if (this.selectedCompany === "new") {
         if (!this.newCompanyName.trim() || !this.newCompanyCurrency) {
           alert("Veuillez entrer un nom d'entreprise et sélectionner une devise.");
@@ -198,7 +194,7 @@ export default {
         try {
           const res = await api.post("/api/companies/", {
             name: this.newCompanyName,
-            currency: this.newCompanyCurrency, // <-- ajouté ici correctement
+            currency: this.newCompanyCurrency,
           });
           companyId = res.data.id;
           this.companies.push(res.data);

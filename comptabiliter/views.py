@@ -178,7 +178,6 @@ class PartnerViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data)
         else:
-            print(serializer.errors)   # <-- ici tu verras le détail
             return Response(serializer.errors, status=400)
 
 # produits
@@ -199,16 +198,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(partner_id=partner_id)
         return queryset
 
-    # ✅ Endpoint personnalisé : /api/invoice/{id}/generate_pdf/
     @action(detail=True, methods=["get"])
     def generate_pdf(self, request, pk=None):
         try:
-            # On récupère la commande
             order = Order.objects.get(pk=pk)
             items = OrderItem.objects.filter(order=order)
             partner = order.partner
 
-            # === 1️⃣ Vérifier si la facture existe déjà ===
+            # ===Vérifier si la facture existe déjà ===
             invoice, created = Invoice.objects.get_or_create(
                 partner=partner,
                 invoice_number=f"INV-{order.id}",
@@ -220,7 +217,7 @@ class InvoiceViewSet(viewsets.ModelViewSet):
                 }
             )
 
-            # === 2️⃣ Créer les lignes de facture si c’est une nouvelle facture ===
+            # ===Créer les lignes de facture si c’est une nouvelle facture ===
             if created:
                 for i in items:
                     InvoiceItem.objects.create(
@@ -246,17 +243,14 @@ class InvoiceViewSet(viewsets.ModelViewSet):
         except Order.DoesNotExist:
             return Response({"error": "Commande introuvable"}, status=status.HTTP_404_NOT_FOUND)
 
-# =========================
 #   VIEWSET DES LIGNES DE FACTURES
-# =========================
+
 class InvoiceItemViewSet(viewsets.ModelViewSet):
     queryset = InvoiceItem.objects.all()
     serializer_class = InvoiceItemSerializer
 
 
-# =========================
-#   VIEW CLASSIQUE (optionnelle)
-# =========================
+#   VIEW CLASSIQUE
 @csrf_exempt
 def create_invoice(request):
     """Créer une facture et l'exporter en PDF"""
@@ -314,24 +308,13 @@ def create_invoice(request):
     except Order.DoesNotExist:
         return JsonResponse({"error": "Order not found"}, status=404)
 
-# =========================
 #   FONCTION DE GÉNÉRATION PDF
-# =========================
 # === CONFIG LOGGING ===
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # === FONCTION DE GÉNÉRATION PDF ===
 def generate_invoice_pdf(invoice, items=None, logo_path=None):
-    """
-    Génère un PDF de facture à partir d'un objet Invoice.
-
-    :param invoice: Invoice instance
-    :param items: Optionnel, liste de dictionnaires {"name", "quantity", "unit_price"}.
-                  Si None, prend les InvoiceItem liés à la facture.
-    :param logo_path: Chemin du logo, sinon chemin par défaut
-    :return: io.BytesIO contenant le PDF
-    """
     if logo_path is None:
         logo_path = os.path.join(settings.BASE_DIR, "comptabiliter/static/logo.png")
 
@@ -408,7 +391,7 @@ def generate_invoice_pdf(invoice, items=None, logo_path=None):
 
     # === PIED DE PAGE ===
     p.setFont("Helvetica-Oblique", 10)
-    p.drawCentredString(width / 2, 1.5 * cm, "Merci pour votre achat ✨")
+    p.drawCentredString(width / 2, 1.5 * cm, "Merci pour votre achat")
 
     p.showPage()
     p.save()
@@ -487,7 +470,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         account_purchase = get_or_create_account(None, "expense", "Achats")
         account_cash = get_or_create_account(None, "asset_cash", "Caisse")
 
-        # --- VENTES (si partenaire client) ---
+        # --- VENTES si partenaire client ---
         if account_client:
             journal_sale = Journal.objects.filter(type='sale').first()
             if not journal_sale:
@@ -517,7 +500,7 @@ class OrderViewSet(viewsets.ModelViewSet):
                 label=f"Vente {order.id}"
             )
 
-        # --- ACHATS (si partenaire fournisseur) ---
+        # --- ACHATS si partenaire fournisseur ---
         if account_supplier:
             journal_purchase = Journal.objects.filter(type='purchase').first()
             if not journal_purchase:
@@ -574,28 +557,23 @@ def generate_unique_code(prefix=''):
     )
 
     if last_code:
-        # Extraire la partie numérique après l'année
         last_number = int(last_code[-4:])
         new_number = last_number + 1
     else:
         new_number = 1
 
-    # Formatter : 20250001
     return f"{year}{new_number:04d}"
 
 
 def get_default_currency():
-    # Essaie de récupérer la devise marquée par défaut
     default = Currency.objects.filter(is_default=True).first()
     if default:
         return default
 
-    # Sinon, prend la première devise existante
     currency = Currency.objects.first()
     if currency:
         return currency
 
-    # Si aucune devise n'existe → en créer une
     return Currency.objects.create(
         name="Ariary",
         code="MGA",
@@ -618,16 +596,14 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         payment = serializer.save()
-        partner = payment.pattern  # le client associé
+        partner = payment.pattern
 
-        # Vérifie que le compte du client existe
         account_partner = Account.objects.filter(partner=partner, account_type='asset_receivable').first()
         if not account_partner:
             raise serializers.ValidationError(
                 f"Le compte comptable du client {partner.name} n'existe pas. Créez d'abord la commande."
             )
 
-        # Mapping des modes de paiement vers comptes et journaux
         PAYMENT_MAPPING = {
             'cash': {'account_name': 'Caisse', 'journal_type': 'cash'},
             'bank': {'account_name': 'Banque', 'journal_type': 'bank'},
@@ -672,7 +648,6 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     compte = '103'
                     sous_compte = '0001'
 
-                # Créer le compte avec toutes les infos
                 account_debit = Account.objects.create(
                     name=account_name,
                     account_type='asset_cash',
@@ -681,12 +656,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     sous_classe=sous_classe,
                     compte=compte,
                     sous_compte=sous_compte,
-                    currency=get_default_currency,  # objet Currency par défaut
+                    currency=get_default_currency,
                     reconcile=False,
                     note=f"Compte créé automatiquement pour {account_name}"
                 )
 
-            # Journal associé
             journal = Journal.objects.filter(type=mapping['journal_type']).first()
             if not journal:
                 journal = Journal.objects.create(
@@ -897,22 +871,16 @@ class TrialBalanceByTypeView(APIView):
 
 #notification
 def analyze_database(user):
-    """
-    Analyse les écritures comptables et les partenaires.
-    Ajoute une notification pour chaque problème détecté,
-    avec une suggestion IA via Gemini.
-    """
+
     problems_found = False
 
-    # Récupérer toutes les écritures comptables
     entries = JournalEntry.objects.all()
 
     for entry in entries:
-        items = entry.lines.all()  # JournalItem liés à cette écriture
+        items = entry.lines.all()
         debit_total = items.aggregate(total=Sum('debit'))['total'] or 0
         credit_total = items.aggregate(total=Sum('credit'))['total'] or 0
 
-        # Vérifier qu'il y a au moins deux lignes
         if items.count() < 2:
             message = f"L'écriture {entry.id} du journal {entry.journal.code} n'a pas assez de lignes (moins de 2)."
             suggestion = ask_gemini(
@@ -962,7 +930,6 @@ def analyze_database(user):
     partners = Partner.objects.all()
     for partner in partners:
         if not partner.is_client and not partner.is_supplier:
-            # Si partenaire ni client ni fournisseur → on ignore
             continue
 
         accounts = Account.objects.filter(partner=partner)

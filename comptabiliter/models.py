@@ -161,7 +161,7 @@ class Account(models.Model):
         return f"{self.code} - {self.name}"
 
     def clean(self):
-        """Validation des contraintes entre type de compte et partenaire"""
+        #"""Validation des contraintes entre type de compte et partenaire"""
         if self.account_type == 'asset_receivable':
             if not self.partner or not self.partner.is_client:
                 raise ValidationError("Un compte 'Asset Receivable' doit être lié à un partenaire de type Client.")
@@ -177,7 +177,7 @@ class Account(models.Model):
             raise ValidationError("Un compte 'Equity' ne doit pas avoir de partenaire.")
 
     def save(self, *args, **kwargs):
-        """Génération automatique du code AAAAXXXX"""
+        #"""Génération automatique du code AAAAXXXX"""
         if not self.code:
             current_year = date.today().year
             last_compte = Account.objects.filter(code__startswith=str(current_year)).order_by('code').last()
@@ -203,7 +203,7 @@ class JournalItem(models.Model):
 class HistoriqueModification(models.Model):
     compte = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="historiques")
     utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
-    action = models.CharField(max_length=50)  # création, modification, suppression
+    action = models.CharField(max_length=50)
     date_action = models.DateTimeField(auto_now_add=True)
     ancienne_valeur = models.TextField(blank=True, null=True)
     nouvelle_valeur = models.TextField(blank=True, null=True)
@@ -285,8 +285,8 @@ class OrderItem(models.Model):
 
 class Payment(models.Model):
     payment_number = models.CharField(max_length=50, unique=True)
-    type = models.CharField(max_length=50) # Ex: incoming, outgoing
-    mode = models.CharField(max_length=50) # Ex: cash, bank transfer, check
+    type = models.CharField(max_length=50)
+    mode = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
     date = models.DateField()
     amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -302,7 +302,7 @@ class Notification(models.Model):
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     message = models.TextField()
-    type = models.CharField(max_length=50, default='info')  # info / warning / error
+    type = models.CharField(max_length=50, default='info')
     created_at = models.DateTimeField(auto_now_add=True)
     read = models.BooleanField(default=False)
 

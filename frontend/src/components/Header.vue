@@ -52,7 +52,7 @@
 
 <script>
 import { ref, computed, onMounted } from 'vue';
-import api from '../axios'; // Ton instance Axios configurée
+import api from '../axios';
 
 export default {
   name: "HeaderWithNav",
@@ -87,7 +87,7 @@ export default {
     const runAnalysis = async () => {
       try {
         await api.post('/api/run-analysis/');
-        await fetchNotifications(); // recharge les notifications après l'analyse
+        await fetchNotifications();
       } catch (e) {
         console.error(e);
       }
@@ -95,7 +95,7 @@ export default {
 
     onMounted(() => {
       fetchNotifications();
-      setInterval(fetchNotifications, 30000); // auto-refresh
+      setInterval(fetchNotifications, 30000);
     });
 
     const unreadCount = computed(() => notifications.value.length);

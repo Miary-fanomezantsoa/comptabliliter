@@ -122,8 +122,7 @@ export default {
 </script>
 
 <style scoped>
-/* Optionnel pour améliorer le hover et les bordures */
 table th, table td {
-  border: 1px solid #d1d5db; /* gris clair Tailwind */
+  border: 1px solid #d1d5db;
 }
 </style>

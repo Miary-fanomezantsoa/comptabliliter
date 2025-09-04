@@ -2,16 +2,13 @@
 import { ref, onMounted } from 'vue'
 import api from '../axios'
 
-// Onglet actif
 const activeTab = ref('currency')
 
 
-// Données
 const currencies = ref([])
 const taxes = ref([])
 const tags = ref([])
 const category = ref([])
-// Formulaires
 const currencyForm = ref({ id: null, name: '', symbol: '', code: '' })
 const taxForm = ref({ id: null, name: '', rate: '' })
 const tagForm = ref({ id: null, name: '' })
@@ -22,7 +19,6 @@ const isEditingTax = ref(false)
 const isEditingTag = ref(false)
 const isEditingCategory = ref(false)
 
-// ---- FETCH ----
 const fetchCurrencies = async () => {
   try {
     const res = await api.get('/api/currencies/')
@@ -60,7 +56,6 @@ const fetchAll = () => {
 onMounted(fetchAll)
 
 // ---- CRUD FUNCTIONS ----
-// Generic save / cancel
 const saveItem = async (type) => {
   try {
     if (type === 'currency') {
