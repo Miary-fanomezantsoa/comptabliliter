@@ -5,9 +5,9 @@
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
         <h2 class="text-3xl font-bold text-orange-900 mb-4 sm:mb-0">Liste des partenaires</h2>
         <button @click="goToCreate"
-                class="px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition">
-          ➕ Créer un partenaire
-        </button>
+        class="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white font-semibold rounded hover:bg-orange-700 transition">
+  <PlusCircle class="w-5 h-5"/> Créer un partenaire
+</button>
       </div>
 
       <!-- Barre de recherche -->
@@ -48,15 +48,15 @@
               <td class="px-4 py-2">{{ partner.country || '-' }}</td>
               <td class="px-4 py-2">{{ partner.type || '-' }}</td>
               <td class="px-4 py-2 space-x-2">
-                <button @click="goToEdit(partner.id)"
-                        class="px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition text-sm">
-                  ✏️ Modifier
-                </button>
-                <button @click="deletePartner(partner.id)"
-                        class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
-                  🗑️ Supprimer
-                </button>
-              </td>
+  <button @click="goToEdit(partner.id)"
+          class="flex items-center gap-1 px-2 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 transition text-sm">
+    <Edit3 class="w-4 h-4"/> Modifier
+  </button>
+  <button @click="deletePartner(partner.id)"
+          class="flex items-center gap-1 px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm">
+    <Trash2 class="w-4 h-4"/> Supprimer
+  </button>
+</td>
             </tr>
           </tbody>
         </table>
@@ -72,9 +72,10 @@
 
 <script>
 import api from '../axios';
-
+import { PlusCircle, Edit3, Trash2 } from 'lucide-vue-next';
 export default {
   name: 'PartnerList',
+  components: { PlusCircle, Edit3, Trash2 },
   data() {
     return {
       partners: [],

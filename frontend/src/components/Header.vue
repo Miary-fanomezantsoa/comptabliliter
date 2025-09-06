@@ -8,11 +8,10 @@
 
     <!-- Notifications et Déconnexion -->
     <div class="flex items-center gap-4">
-      <!-- Icone notification -->
+      <!-- Icône notification -->
       <div class="relative">
-        <button @click="toggleDropdown"
-                class="text-white text-2xl hover:text-yellow-300 transition-colors">
-          🔔
+        <button @click="toggleDropdown" class="text-white hover:text-yellow-300 transition-colors">
+          <Bell class="w-6 h-6" />
         </button>
 
         <!-- Badge nombre de notifications -->
@@ -34,8 +33,8 @@
           <!-- Bouton pour lancer l'analyse -->
           <div class="p-2 text-center border-t mt-1">
             <button @click="runAnalysis"
-                    class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition duration-200">
-              🔍 Analyser la DB
+                    class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition duration-200 flex items-center justify-center gap-1">
+              <Search class="w-5 h-5" /> Analyser la DB
             </button>
           </div>
         </div>
@@ -43,8 +42,8 @@
 
       <!-- Bouton Déconnexion -->
       <button @click="logout"
-              class="bg-[#c06b3e] text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-[#a0522d] hover:shadow-xl transition duration-300 transform hover:scale-105">
-        🔒 Se déconnecter
+              class="bg-[#c06b3e] text-white px-4 py-2 rounded-xl font-semibold shadow-lg hover:bg-[#a0522d] hover:shadow-xl transition duration-300 transform hover:scale-105 flex items-center gap-1">
+        <Lock class="w-5 h-5" /> Se déconnecter
       </button>
     </div>
   </header>
@@ -54,8 +53,12 @@
 import { ref, computed, onMounted } from 'vue';
 import api from '../axios';
 
+// Lucide Icons
+import { Bell, Search, Lock } from 'lucide-vue-next';
+
 export default {
   name: "HeaderWithNav",
+  components: { Bell, Search, Lock },
   setup() {
     const notifications = ref([]);
     const showDropdown = ref(false);

@@ -2,25 +2,31 @@
   <div class="min-h-screen bg-[#fdf6f0] p-6 font-sans">
     <div class="max-w-7xl mx-auto">
       <!-- Titre -->
-      <h2 class="text-3xl sm:text-4xl font-extrabold text-[#5a2d0c] text-center mb-8">
-        🍫 Comptes comptables
+      <h2 class="text-3xl sm:text-4xl font-extrabold text-[#5a2d0c] text-center mb-8 flex items-center justify-center gap-2">
+        <Package class="w-10 h-10 text-[#5a2d0c]" /> Comptes comptables
       </h2>
 
       <!-- Bouton ajouter -->
       <div class="flex justify-end mb-4">
         <button @click="openModal()"
-          class="bg-gradient-to-r from-[#a0522d] to-[#d2691e] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-transform">
-          Ajouter un compte
+          class="flex items-center gap-2 bg-gradient-to-r from-[#a0522d] to-[#d2691e] text-white font-bold px-6 py-3 rounded-xl shadow-lg hover:scale-105 hover:shadow-2xl transition-transform">
+          <PlusCircle class="w-5 h-5" /> Ajouter un compte
         </button>
       </div>
-        <div class="mb-4">
-  <input
-    v-model="searchTerm"
-    type="text"
-    placeholder="🔍 Rechercher un compte..."
-    class="w-full sm:w-1/2 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-[#d2691e]"
-  />
-</div>
+
+      <!-- Search -->
+      <div class="mb-4">
+        <div class="relative">
+          <input
+            v-model="searchTerm"
+            type="text"
+            placeholder="Rechercher un compte..."
+            class="w-full sm:w-1/2 p-2 pl-10 border rounded focus:outline-none focus:ring-2 focus:ring-[#d2691e]"
+          />
+          <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        </div>
+      </div>
+
       <!-- Tableau -->
       <div class="overflow-x-auto">
         <table class="min-w-full bg-white rounded-xl shadow-lg overflow-hidden">
@@ -31,7 +37,6 @@
               <th class="py-3 px-6 text-left">Type</th>
               <th class="py-3 px-6 text-left">Structure</th>
               <th class="py-3 px-6 text-left">Actions</th>
-
             </tr>
           </thead>
           <tbody>
@@ -40,20 +45,22 @@
               <td class="py-3 px-6">{{ compte.name }}</td>
               <td class="py-3 px-6">{{ compte.account_type }}</td>
               <td class="py-3 px-6">
-                    {{ compte.classe || '-' }} ·
-                    {{ compte.sous_classe || '-' }} ·
-                    {{ compte.compte || '-' }} ·
-                    {{ compte.sous_compte || '-' }}
+                {{ compte.classe || '-' }} · {{ compte.sous_classe || '-' }} · {{ compte.compte || '-' }} · {{ compte.sous_compte || '-' }}
               </td>
               <td class="py-3 px-6 flex gap-2 flex-wrap">
-
-                <button @click="openModal(compte)" class="bg-[#8b4513] text-white px-3 py-1 rounded hover:bg-[#a0522d] transition-colors">Modifier</button>
-                <button @click="openEcritures(compte)" class="bg-[#d2a679] text-[#3c1e0b] px-3 py-1 rounded hover:bg-[#e0b58a] transition-colors">Écritures</button>
-                <button @click="deleteCompte(compte.id)" class="bg-[#c04000] text-white px-3 py-1 rounded hover:bg-[#a83200] transition-colors">Supprimer</button>
+                <button @click="openModal(compte)" class="flex items-center gap-1 bg-[#8b4513] text-white px-3 py-1 rounded hover:bg-[#a0522d] transition-colors">
+                  <Edit3 class="w-4 h-4" /> Modifier
+                </button>
+                <button @click="openEcritures(compte)" class="flex items-center gap-1 bg-[#d2a679] text-[#3c1e0b] px-3 py-1 rounded hover:bg-[#e0b58a] transition-colors">
+                  <BookOpen class="w-4 h-4" /> Écritures
+                </button>
+                <button @click="deleteCompte(compte.id)" class="flex items-center gap-1 bg-[#c04000] text-white px-3 py-1 rounded hover:bg-[#a83200] transition-colors">
+                  <Trash2 class="w-4 h-4" /> Supprimer
+                </button>
               </td>
             </tr>
             <tr v-if="comptes.length === 0">
-              <td colspan="4" class="py-4 text-center text-gray-500">Aucun compte disponible</td>
+              <td colspan="5" class="py-4 text-center text-gray-500">Aucun compte disponible</td>
             </tr>
           </tbody>
         </table>
@@ -62,7 +69,11 @@
       <!-- Modal compte -->
       <transition name="fade">
         <div v-if="modalVisible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div class="bg-[#fff3e6] rounded-2xl w-full max-w-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <div class="bg-[#fff3e6] rounded-2xl w-full max-w-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh] relative">
+            <button @click="closeModal" class="absolute top-4 right-4 p-1 rounded hover:bg-gray-200">
+              <X class="w-5 h-5" />
+            </button>
+
             <h3 class="text-2xl font-bold text-[#5a2d0c] text-center mb-4">
               {{ form.id ? 'Modifier le compte' : 'Ajouter un compte' }}
             </h3>
@@ -70,18 +81,15 @@
             <form @submit.prevent="saveCompte" class="space-y-4">
               <input v-if="form.id" v-model="form.code" placeholder="Code" readonly
                 class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]" />
-
               <input v-model="form.name" placeholder="Intitulé" required
                 class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]" />
 
-              <!-- Type -->
               <label class="block font-semibold text-[#5a2d0c]">Type de compte :</label>
               <select v-model="form.account_type" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
                 <option value="" disabled hidden>Choisir un type de compte</option>
                 <option v-for="(label, key) in accountTypes" :key="key" :value="key">{{ label }}</option>
               </select>
 
-              <!-- Devise -->
               <label class="block font-semibold text-[#5a2d0c]">Devise :</label>
               <select v-model="form.currency" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
                 <option value="" disabled>Choisir une devise</option>
@@ -132,16 +140,11 @@
                 </div>
               </div>
 
-
-
-
-              <!-- Rapprochement -->
               <label class="inline-flex items-center gap-2">
                 <input type="checkbox" v-model="form.reconcile" class="rounded border-gray-300" />
                 Rapprochement
               </label>
 
-              <!-- Taxes / Tags -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block font-semibold text-[#5a2d0c]">Taxes :</label>
@@ -157,7 +160,6 @@
                 </div>
               </div>
 
-              <!-- Partenaire -->
               <div v-if="requiresPartner(form.account_type)">
                 <label class="block font-semibold text-[#5a2d0c]">Partenaire :</label>
                 <select v-model="form.partner" class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]">
@@ -166,11 +168,9 @@
                 </select>
               </div>
 
-              <!-- Note -->
               <textarea v-model="form.note" placeholder="Note (facultatif)"
                 class="w-full p-2 rounded border border-[#d4b89c] bg-[#fff8f0] focus:outline-none focus:ring-2 focus:ring-[#d2691e]"></textarea>
 
-              <!-- Boutons -->
               <div class="flex justify-end gap-3">
                 <button type="submit" class="bg-[#a0522d] text-white font-bold px-6 py-2 rounded-xl hover:bg-[#d2691e] transition-colors">
                   {{ form.id ? 'Modifier' : 'Ajouter' }}
@@ -183,50 +183,41 @@
           </div>
         </div>
       </transition>
-      <!-- Modal Écritures -->
-<transition name="fade">
-  <div v-if="ecritureModalVisible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl w-full max-w-4xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-2xl font-bold text-[#5a2d0c]">
-          Écritures — {{ compteSelectionne.code }} · {{ compteSelectionne.name }}
-        </h3>
-        <button @click="ecritureModalVisible=false"
-                class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 transition">
-          Fermer
-        </button>
-      </div>
 
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-[#fff8f0] rounded-xl overflow-hidden">
-          <thead class="bg-[#8b4513] text-white">
-            <tr>
-              <th class="py-2 px-4 text-left">Date</th>
-              <th class="py-2 px-4 text-left">Journal</th>
-              <th class="py-2 px-4 text-left">Réf.</th>
-              <th class="py-2 px-4 text-left">Libellé</th>
-              <th class="py-2 px-4 text-right">Débit</th>
-              <th class="py-2 px-4 text-right">Crédit</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="e in ecritures" :key="e.id" class="hover:bg-[#fce8d8]">
-              <td class="py-2 px-4">{{ formatDate(e.date) }}</td>
-              <td class="py-2 px-4">{{ e.journal || '-' }}</td>
-              <td class="py-2 px-4">{{ e.reference || '-' }}</td>
-              <td class="py-2 px-4">{{ e.label }}</td>
-              <td class="py-2 px-4 text-right">{{ formatAmount(e.debit) }}</td>
-              <td class="py-2 px-4 text-right">{{ formatAmount(e.credit) }}</td>
-            </tr>
-            <tr v-if="ecritures.length === 0">
-              <td colspan="6" class="py-3 px-4 text-center text-gray-500">Aucune écriture</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</transition>
+      <!-- Modal Écritures -->
+      <transition name="fade">
+        <div v-if="ecritureModalVisible" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div class="bg-white rounded-2xl w-full max-w-4xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto relative">
+            <button @click="ecritureModalVisible=false" class="absolute top-4 right-4 p-1 rounded hover:bg-gray-200">
+              <X class="w-5 h-5" />
+            </button>
+            <h3 class="text-2xl font-bold text-[#5a2d0c] mb-4">
+              Écritures du compte {{ selectedCompte?.name }}
+            </h3>
+            <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
+              <thead class="bg-[#8b4513] text-white">
+                <tr>
+                  <th class="py-2 px-4">Date</th>
+                  <th class="py-2 px-4">Libellé</th>
+                  <th class="py-2 px-4">Débit</th>
+                  <th class="py-2 px-4">Crédit</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="e in ecritures" :key="e.id" class="hover:bg-[#fce8d8] transition-colors">
+                  <td class="py-2 px-4">{{ e.date }}</td>
+                  <td class="py-2 px-4">{{ e.label }}</td>
+                  <td class="py-2 px-4">{{ e.debit }}</td>
+                  <td class="py-2 px-4">{{ e.credit }}</td>
+                </tr>
+                <tr v-if="ecritures.length===0">
+                  <td colspan="4" class="text-center py-4 text-gray-500">Aucune écriture disponible</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -234,8 +225,11 @@
 <script>
 import api from '../axios.js';
 import plan_comptable_general_2005 from '../../compte.json';
-
+import { PlusCircle, Search, Edit3, BookOpen, Trash2, X, Package } from 'lucide-vue-next';
 export default {
+  components: { PlusCircle, Search, Edit3, BookOpen, Trash2, X, Package },
+
+
   data() {
     return {
     searchTerm: '',

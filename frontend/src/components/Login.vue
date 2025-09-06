@@ -18,24 +18,25 @@
         />
 
         <!-- Champ mot de passe avec œil -->
-        <div class="relative">
-          <input
-            :type="showPassword ? 'text' : 'password'"
-            v-model="password"
-            placeholder="Mot de passe"
-            required
-            autocomplete="current-password"
-            class="w-full px-4 py-2 rounded-lg border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:outline-none text-gray-800 pr-10"
-          />
-          <button
-            type="button"
-            @click="showPassword = !showPassword"
-            class="absolute inset-y-0 right-2 flex items-center text-gray-600 hover:text-gray-900"
-          >
-            <span v-if="showPassword">👁️</span>
-            <span v-else>🙈</span>
-          </button>
-        </div>
+        <!-- Champ mot de passe avec œil -->
+<div class="relative">
+  <input
+    :type="showPassword ? 'text' : 'password'"
+    v-model="password"
+    placeholder="Mot de passe"
+    required
+    class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-orange-500 pr-10"
+  />
+  <button
+    type="button"
+    @click="showPassword = !showPassword"
+    class="absolute inset-y-0 right-2 flex items-center text-gray-600"
+  >
+    <Eye v-if="showPassword" class="w-5 h-5"/>
+    <EyeOff v-else class="w-5 h-5"/>
+  </button>
+</div>
+
 
         <button
           type="submit"
@@ -54,8 +55,12 @@
 
 <script>
 import axios from 'axios'
-
+import { Eye, EyeOff } from 'lucide-vue-next'
 export default {
+components: {
+    Eye,
+    EyeOff
+  },
   data() {
     return {
       username: '',

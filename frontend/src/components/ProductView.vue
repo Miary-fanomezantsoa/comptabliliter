@@ -2,13 +2,15 @@
   <div class="min-h-screen bg-gray-100 p-6">
     <div class="max-w-5xl mx-auto bg-white shadow-lg rounded-xl p-6 space-y-6">
 
-      <h1 class="text-3xl font-bold text-gray-800">📦 Gestion Produits</h1>
+      <h1 class="text-3xl font-bold text-gray-800"> Gestion Produits</h1>
 
       <!-- Bouton Ajouter produit -->
       <button @click="showForm = !showForm"
-              class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-        {{ showForm ? "❌ Annuler" : "➕ Ajouter Produit" }}
-      </button>
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+  <component :is="showForm ? X : PlusCircle" class="w-5 h-5"/>
+  {{ showForm ? "Annuler" : "Ajouter Produit" }}
+</button>
+
 
       <!-- Formulaire d'ajout produit -->
       <form v-if="showForm" @submit.prevent="addProduct" class="space-y-4 bg-gray-50 p-4 rounded-lg shadow">
@@ -47,19 +49,23 @@
         </div>
 
         <button type="submit"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          ➕ Ajouter Produit
-        </button>
-      </form>
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+  <PlusCircle class="w-5 h-5"/>
+  Ajouter Produit
+</button>
+</form>
+
 
       <!-- Recherche -->
-      <div class="mt-4">
-        <input v-model="searchQuery" type="text" placeholder="🔍 Rechercher par nom ou catégorie"
-          class="w-full border rounded-lg p-2 focus:ring focus:ring-blue-300"/>
-      </div>
+      <div class="relative mt-4 w-full">
+  <input v-model="searchQuery" type="text" placeholder="Rechercher par nom ou catégorie"
+         class="w-full border rounded-lg p-2 pl-10 focus:ring focus:ring-blue-300"/>
+  <Search class="w-5 h-5 absolute left-2 top-1/2 transform -translate-y-1/2 text-blue-500"/>
+</div>
+
 
       <!-- Liste des produits -->
-      <h2 class="text-2xl font-semibold text-gray-800 mt-4 mb-2">📋 Liste des Produits</h2>
+      <h2 class="text-2xl font-semibold text-gray-800 mt-4 mb-2">Liste des Produits</h2>
       <div class="overflow-x-auto">
         <table class="w-full border border-gray-200 rounded-lg overflow-hidden">
           <thead class="bg-gray-200">
@@ -89,9 +95,16 @@
 
 <script>
 import api from "../axios";
+import { PlusCircle, Search, Edit, Trash2, X } from "lucide-vue-next";
+
 
 export default {
+components: {
+  PlusCircle, Search, Edit, Trash2, X
+},
+
   name: "ProductView",
+
   data() {
     return {
       products: [],

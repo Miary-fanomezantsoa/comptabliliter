@@ -4,7 +4,7 @@
 
       <!-- Header -->
       <div class="flex justify-between items-center mb-4">
-        <h2 class="text-4xl font-bold text-amber-900">🍫 Gestion des factures</h2>
+        <h2 class="text-4xl font-bold text-amber-900">Gestion des factures</h2>
       </div>
     <!-- Filtre par date -->
 <div class="flex flex-wrap gap-4 items-center bg-white p-4 rounded-lg shadow">
@@ -34,7 +34,7 @@
 
       <!-- Détail facture -->
       <div v-if="selectedInvoice" class="bg-white p-6 rounded-xl shadow-md space-y-6">
-        <h3 class="text-2xl font-bold text-amber-900 mb-2">📄 Détails de la facture #{{ selectedInvoice.invoice_number }}</h3>
+        <h3 class="text-2xl font-bold text-amber-900 mb-2">Détails de la facture #{{ selectedInvoice.invoice_number }}</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <p><strong>Client:</strong> {{ selectedInvoice.patern }}</p>
           <p><strong>Date:</strong> {{ selectedInvoice.date }}</p>
@@ -69,7 +69,7 @@
 
         <!-- Paiements -->
         <div v-if="payments.length" class="mt-6">
-          <h4 class="text-lg font-semibold text-amber-800 mb-2">💰 Paiements</h4>
+          <h4 class="text-lg font-semibold text-amber-800 mb-2">Paiements</h4>
           <div class="overflow-x-auto">
             <table class="min-w-full border border-gray-300 rounded-lg overflow-hidden">
               <thead class="bg-amber-700 text-white">

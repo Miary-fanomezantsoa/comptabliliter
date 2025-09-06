@@ -2,8 +2,9 @@
   <div class="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 p-4 font-sans flex flex-col items-center">
     <!-- Header -->
     <div class="w-full max-w-xl bg-orange-600 text-white p-4 rounded-xl shadow-md mb-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold flex items-center gap-2">🧾 Journal Comptable</h1>
-    </div>
+<h1 class="text-2xl font-bold flex items-center gap-2">
+  <BookOpen /> Journal Comptable
+</h1>    </div>
 
     <!-- Statistiques rapides -->
     <div v-if="selectedJournal" class="w-full max-w-xl bg-white p-4 rounded-xl shadow-md mb-4 flex justify-between text-sm sm:text-base">
@@ -89,18 +90,18 @@
       <input type="text" v-model="newItem.label" placeholder="Libellé"
              class="p-2 mb-2 rounded border border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-600 w-full"/>
 
-      <button @click="addItem"
-              class="w-full sm:w-auto px-4 py-2 bg-orange-600 text-white font-bold rounded hover:bg-orange-700 transition-colors">
-        ➕ Ajouter
-      </button>
+      <button @click="addItem" class="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white font-bold rounded hover:bg-orange-700 transition-colors">
+  <PlusCircle /> Ajouter
+</button>
     </div>
   </div>
 </template>
 
 <script>
 import api from '../axios';
-
+import { PlusCircle, Edit3, BookOpen, Trash2, X, Package } from 'lucide-vue-next';
 export default {
+components: { PlusCircle, Edit3, BookOpen, Trash2, X, Package },
   data() {
     return {
       journals: [],

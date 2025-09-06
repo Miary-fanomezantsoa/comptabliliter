@@ -14,6 +14,7 @@ import User from './components/User.vue';
 import Paramettre from './components/Parametre.vue'
 import produit from './components/ProductView.vue'
 import invoice from './components/InvoiceClient.vue'
+import chatbot from './components/Chatbot.vue'
 
 
 const routes = [
@@ -27,6 +28,7 @@ const routes = [
     component: LayoutLModern,
     meta: { requiresAuth: true },
     children: [
+      {path: 'chatbot', name: 'chatbot',component: chatbot},
       {path: 'produit', name: 'produit',component: produit},
       {path: 'Paramettre', name: 'Paramettre',component: Paramettre},
       {path: 'User', name: 'User',component: User},
