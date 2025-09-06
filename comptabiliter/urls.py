@@ -22,14 +22,7 @@ from rest_framework.routers import DefaultRouter
 
 from . import views
 from .admin import PartnerAutocomplete
-from .views import (
-    CurrencyViewSet, TaxViewSet, AccountTagViewSet,  # Suppression de AccountViewSet
-    JournalViewSet, JournalEntryViewSet, JournalItemViewSet,
-    CompanyViewSet, UserViewSet, TrialBalanceByTypeView, GeneralLedgerView,
-    UserDetailView, CompteComptableViewSet, PartnerViewSet,
-    CurrentUserView, OrderViewSet, OrderItemViewSet, ProductViewSet, PaymentViewSet,
-    InvoiceViewSet, CategoryViewSet, InvoiceItemViewSet,get_notifications  # Ajout de CurrentUserView
-)
+from .views import *
 from django.contrib import admin
 
 router = DefaultRouter()

@@ -2,12 +2,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import (
-    Currency, Tax, AccountTag, Account,
-    Journal, JournalEntry, JournalItem,
-    Company, UserProfile, HistoriqueModification, User, Partner, Product, OrderItem, Order, Payment,
-    Invoice, Category, InvoiceItem, Notification
-)
+from .models import *
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

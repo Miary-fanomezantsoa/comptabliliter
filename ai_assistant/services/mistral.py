@@ -1,7 +1,9 @@
 # ai_assistant/services/mistral.py
 from text_generation import Client
+import os
 
-MODEL_PATH = "../../../Mistral-7B-Instruct-v0.3-Q6_K.gguf"  # remplace par le chemin exact
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # dossier ai_assistant/services
+MODEL_PATH = os.path.join(BASE_DIR, "Mistral-7B-Instruct-v0.3-Q6_K.gguf")
 client = Client(MODEL_PATH)
 
 def ask_mistral(prompt: str, max_length: int = 200) -> str:

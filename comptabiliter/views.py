@@ -1,10 +1,8 @@
 import io
 import logging
 import os
-from ai_assistant.services.gemini import ask_gemini
+from ai_assistant.services.gemini import *
 from datetime import datetime
-from django.conf import settings
-from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib import colors, logger
 from reportlab.lib.pagesizes import A4
@@ -14,25 +12,13 @@ from dal import autocomplete
 from django.db.models import Sum, Max
 from django.http import HttpResponse, JsonResponse
 from reportlab.platypus import Table, TableStyle
-from rest_framework import viewsets, filters, serializers, status
+from rest_framework import viewsets, filters, status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view
 import json
-from .models import (
-    Currency, Tax, AccountTag, Account,
-    Journal, JournalEntry, JournalItem, Partner,
-    Company, HistoriqueModification, Order, Invoice, Product, OrderItem, Payment, User, Category,
-    InvoiceItem, Notification
-)
-from .serializers import (
-    CurrencySerializer, TaxSerializer, AccountTagSerializer, AccountSerializer,
-    JournalSerializer, JournalEntrySerializer, JournalItemSerializer, PartnerSerializer,
-    CompanySerializer, UserSerializer,
-    HistoriqueModificationSerializer, SafeUserSerializer, PaymentSerializer, OrderItemSerializer, OrderSerializer,
-    InvoiceSerializer, ProductSerializer, CategorySerializer, InvoiceItemSerializer
-)
+from .serializers import *
 
 #devise
 class CurrencyViewSet(viewsets.ModelViewSet):
@@ -427,9 +413,6 @@ def get_account_structure(account_type):
         return {"classe":"7", "sous_classe":"10", "compte":"701", "sous_compte":"0000"}  # Ventes
     elif account_type == "expense":
         return {"classe":"6", "sous_classe":"10", "compte":"601", "sous_compte":"0000"}  # Achats
-    else:
-        return {"classe":"0", "sous_classe":"00", "compte":"000", "sous_compte":"0000"}
-
 # --- OrderViewSet ---
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -942,7 +925,7 @@ def analyze_database(user):
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                message=message + f"\n Suggestion: {suggestion}",
                 type='error'
             )
             problems_found = True
@@ -956,7 +939,7 @@ def analyze_database(user):
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                message=message + f"\nSuggestion: {suggestion}",
                 type='warning'
             )
             problems_found = True
@@ -965,7 +948,7 @@ def analyze_database(user):
     if not problems_found:
         Notification.objects.create(
             user=user,
-            message="✅ Analyse terminée : toutes les écritures comptables et partenaires semblent corrects.",
+            message="Analyse terminée : toutes les écritures comptables et partenaires semblent corrects.",
             type='info'
         )
 
