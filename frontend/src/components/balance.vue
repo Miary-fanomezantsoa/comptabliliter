@@ -77,7 +77,7 @@
 
     <!-- Message si pas équilibré -->
     <p v-if="!balance.is_balanced" class="text-red-700 font-bold text-center mt-4 p-2 border border-red-300 rounded bg-red-100">
-      ⚠ La balance n'est pas équilibrée !
+      La balance n'est pas équilibrée, veillez vérifier vox notification pour plus de détaille!
     </p>
   </div>
 </template>

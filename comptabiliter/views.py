@@ -800,7 +800,7 @@ class TrialBalanceByTypeView(APIView):
                 "credit_solde": credit_solde,
             }
 
-            # Classe 1 à 5
+
             if acc.code and acc.code[0] in "12345":
                 balance_by_class["Classes 1 à 5"]["accounts"].append(account_data)
                 balance_by_class["Classes 1 à 5"]["total_debit"] += debit_total
@@ -808,7 +808,7 @@ class TrialBalanceByTypeView(APIView):
                 balance_by_class["Classes 1 à 5"]["total_debit_solde"] += debit_solde
                 balance_by_class["Classes 1 à 5"]["total_credit_solde"] += credit_solde
 
-            # Classe 6 et 7
+
             elif acc.code and acc.code[0] in "67":
                 balance_by_class["Classes 6 et 7"]["accounts"].append(account_data)
                 balance_by_class["Classes 6 et 7"]["total_debit"] += debit_total
@@ -867,12 +867,13 @@ def analyze_database(user):
         if items.count() < 2:
             message = f"L'écriture {entry.id} du journal {entry.journal.code} n'a pas assez de lignes (moins de 2)."
             suggestion = ask_gemini(
-                f"Que doit faire un comptable si une écriture comptable n'a qu'une seule ligne ? "
+                f"Tu es expert-comptable. Donne une réponse courte et précise (2 phrases max). "
+                f"Que doit faire un comptable si une écriture comptable n'a qu'une seule ligne ?"
                 f"Contexte : {message}"
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                message=message + f"\n Suggestion : {suggestion}",
                 type='error'
             )
             problems_found = True
@@ -884,12 +885,13 @@ def analyze_database(user):
                 f"n'est pas équilibrée (Débit={debit_total}, Crédit={credit_total})."
             )
             suggestion = ask_gemini(
-                f"Comment corriger une écriture comptable déséquilibrée ? "
+                f"Tu es expert-comptable. Donne une réponse courte et précise (2 phrases max). "
+                f"Explique uniquement comment corriger ce déséquilibre. "
                 f"Contexte : {message}"
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                message=message + f"\n Suggestion: {suggestion}",
                 type='error'
             )
             problems_found = True
@@ -899,12 +901,12 @@ def analyze_database(user):
             message = f"L'écriture {entry.id} du journal {entry.journal.code} n'a pas de référence."
             suggestion = ask_gemini(
                 f"Pourquoi est-il important d'avoir une référence sur une écriture comptable "
-                f"et que doit-on faire si elle est manquante ? "
+                f"et que doit-on faire si elle est manquante ?donne une reponse le plus couter est pressise possible "
                 f"Contexte : {message}"
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\n💡 Suggestion IA : {suggestion}",
+                message=message + f"\n Suggestion: {suggestion}",
                 type='warning'
             )
             problems_found = True
@@ -919,7 +921,7 @@ def analyze_database(user):
         if not accounts.exists() and not (partner.is_client and partner.is_supplier):
             message = f"Le partenaire {partner.name} n'a aucun compte comptable associé."
             suggestion = ask_gemini(
-                f"Quel compte comptable faut-il associer à un partenaire "
+                f"Quel compte comptable faut-il associer à un partenaire.donne une reponse le plus couter est pressise possible "
                 f"({ 'client' if partner.is_client else 'fournisseur' }) ? "
                 f"Contexte : {partner.name}"
             )
@@ -933,13 +935,13 @@ def analyze_database(user):
         elif accounts.count() > 2:
             message = f"Le partenaire {partner.name} possède plus de 2 comptes comptables (actuellement {accounts.count()})."
             suggestion = ask_gemini(
-                f"Un partenaire ne doit pas avoir plus de 2 comptes comptables. "
+                f"tu est une conseiller pour un comptable.Un partenaire ne doit pas avoir plus de 2 comptes comptables. "
                 f"Que doit faire le comptable dans ce cas ? "
-                f"Contexte : {partner.name}"
+                f"Contexte : {partner.name}. donne une reponse le plus couter est pressise possible"
             )
             Notification.objects.create(
                 user=user,
-                message=message + f"\nSuggestion: {suggestion}",
+                message=message + f"\n Suggestion: {suggestion}",
                 type='warning'
             )
             problems_found = True
@@ -955,9 +957,6 @@ def analyze_database(user):
 
 @api_view(['GET'])
 def get_notifications(request):
-    """
-    Récupère les notifications non lues pour l'utilisateur
-    """
     notifications = Notification.objects.filter(user=request.user, read=False).order_by('-created_at')
     data = [{
         "id": n.id,
@@ -976,7 +975,7 @@ def run_analysis(request):
     """
     user = request.user
     analyze_database(user)
-    return Response({"message": "Analyse terminée, notifications créées."})
+    return Response({"message": "Analyse terminée."})
 @api_view(['POST'])
 def mark_notification_read(request, pk):
     try:

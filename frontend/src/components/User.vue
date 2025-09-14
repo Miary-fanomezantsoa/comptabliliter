@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted , computed } from 'vue'
 import api from '../axios'
-import { UserPlus, X, Edit, Trash2, Eye, EyeOff } from 'lucide-vue-next';
+import { UserPlus, X, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-vue-next';
 const users = ref([])
 const searchQuery = ref('')
 const showForm = ref(false)

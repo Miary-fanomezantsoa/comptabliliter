@@ -12,9 +12,6 @@ def gemini_api_view(request):
     try:
         data = json.loads(request.body.decode("utf-8"))
         prompt = data.get("prompt", "")
-        if not prompt:
-            return JsonResponse({"error": "Le champ 'prompt' est requis"}, status=400)
-
         response = ask_gemini(prompt)
         return JsonResponse({"response": response})
 

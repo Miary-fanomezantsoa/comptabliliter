@@ -240,16 +240,13 @@ selectedOrderTotal() {
     return sum;
   },
 
-  // Total payé pour la commande sélectionnéeconst res = await api.post('/api/invoice/', payload);
   selectedOrderPaid() {
     return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   },
 
-  // Reste à payer pour la commande sélectionnée
   remainingAmount() {
     return this.selectedOrderTotal - this.selectedOrderPaid;
   },
-  // Somme des paiements déjà faits pour la commande sélectionnée
   totalPaid() {
     return this.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   },
@@ -278,7 +275,6 @@ selectedOrderTotal() {
       const res = await api.patch(`/api/orders/${order.id}/`, {
         status: order.status
       });
-      console.log("Statut mis à jour:", res.data);
     } catch (error) {
       console.error("Erreur mise à jour statut:", error.response?.data || error);
     }
